@@ -1,0 +1,55 @@
+* Notes
+
+** Useful environments
+
+#+BEGIN_SRC scheme
+system-global-environment  ; use for redefining stuff
+(the-environment)          ; needs to be called. use inside functions/macros (at top level)
+                           ; i.e. bind inside a `let' fist
+(nearest-repl/environment) ; needs to be called.
+#+END_SRC
+
+
+** General pattern for redefining internal procedures
+
+Get value from the environment
+
+#+BEGIN_SRC scheme
+(define *symbol* (environment-lookup system-global-environment 'symbol))
+(define-syntax symbol
+  ...)
+#+END_SRC
+
+** Scheme types we are concerned with
+
+- =fixnum= : an integer constant. e.g. 1
+- =ratnum= : a rational constant e.g. (/ 1 2)
+- =flonum= : a floating point constant e.g. 1.0
+- =string= : a string e.g. "H"
+- =character= : a character e.g. #\c
+- =pair= : a cons cell e.g. '(1 . 2)
+- =list= : a cons cell ending with the empty list e.g '(1 2)
+- =procedure= : a lambda expression e.g. (lambda (x) x)
+- =interned-symbol= : a symbol
+- =uninterned-symbol= : a fresh symbol guaranteed to not exist in the environment
+
+** Getting run-time type information in MIT/Scheme
+
+The expression is evaluated
+
+#+BEGIN_SRC scheme
+(dispatch-tag expr)
+(dispatch-tag-contents (dispatch-tag expr)) ; to view the contents
+#+END_SRC
+
+** No-eval macro
+
+=quote= is used to stop evalution.
+
+#+BEGIN_SRC scheme
+(define-syntax no-eval
+  (syntax-rules ()
+    ((_ expr)
+     (quote expr))))
+#+END_SRC
+
