@@ -22,14 +22,14 @@ Get value from the environment
 
 ** Scheme types we are concerned with
 
-- =fixnum= : an integer constant. e.g. 1
-- =ratnum= : a rational constant e.g. (/ 1 2)
-- =flonum= : a floating point constant e.g. 1.0
-- =string= : a string e.g. "H"
-- =character= : a character e.g. #\c
-- =pair= : a cons cell e.g. '(1 . 2)
-- =list= : a cons cell ending with the empty list e.g '(1 2)
-- =procedure= : a lambda expression e.g. (lambda (x) x)
+- =fixnum= : an integer constant. e.g. =1=
+- =ratnum= : a rational constant e.g. =(/ 1 2)=
+- =flonum= : a floating point constant e.g. =1.0=
+- =string= : a string e.g. ="H"=
+- =character= : a character e.g. =#\c=
+- =pair= : a cons cell e.g. ='(1 . 2)=
+- =list= : a cons cell ending with the empty list e.g ='(1 2)=
+- =procedure= : a lambda expression e.g. =(lambda (x) x)=
 - =interned-symbol= : a symbol
 - =uninterned-symbol= : a fresh symbol guaranteed to not exist in the environment
 
