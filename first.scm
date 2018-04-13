@@ -1,14 +1,14 @@
 (load "linear-match.scm") ;; pattern matcher
 
-|#
-    no-eval: quotes expression
 #|
+    no-eval: quotes expression
+|#
 (define-syntax no-eval
   (syntax-rules ()
     ((_ expr)
      'expr)))
 
-|#
+#|
     An interface for type expressions
 
     Ground types
@@ -18,9 +18,10 @@
 
     Function types
      . (-> s t)
-#|
+|#
 (define ground-types
   '(number fixnum flonum bignum boolean))
+
 
 (define (ground-type? type)
   (member type ground-types))
@@ -41,12 +42,12 @@
   (equal? type 'any))
 
 
-|#
+#|
     Type consistency operator (~)
     - Reflexive
     - Symmetric
     - NOT Transitive
-#|
+|#
 (define (~ type1 type2)
   (cond ((or (any-type? type1) (any-type? type2)) #t)
 	((equal? type1 type2) #t)
@@ -55,10 +56,10 @@
 	      (~ (cdr type1) (cdr type2))))
 	(else #f)))
 
-|#
+#|
     Before we start type checking we need to define the
     syntax of our extensions to Scheme.
-#|
+|#
 (define-syntax typed-lambda
   (syntax-rules (:)
     ((_ (: var type) body ...)
@@ -78,7 +79,7 @@
      val)))
 
 
-(define (type-check expr type gamma) 
+(define (type-check expr type gamma)
   (match expr
     ;; For now it seems hard to not evaluate certain
     ;; objects such as numbers and booleans. This is
@@ -117,7 +118,7 @@
 
 ;; Examples
 (type-check (no-eval (+ 1 2)) 'number '()) ; => 'number
-(type-check (no-eval (+ 1 2)) 'boolean '()) ; => ERROR
+;; (type-check (no-eval (+ 1 2)) 'boolean '()) ; => ERROR
 
 (type-check (no-eval (typed-lambda (: x number) (+ x 1)))
 	    '(-> number any) '()) ; => (-> number any)
@@ -125,6 +126,10 @@
 (type-check (no-eval (typed-lambda (: x number) x))
 	    '(-> number number) '()) ; => (-> number number)
 
-(type-check (no-eval (typed-lambda (: x string) (+ x 1)))
-	    '(-> number string) '()) ; => ERROR
+;; (type-check (no-eval (typed-lambda (: x string) (+ x 1)))
+;; 	    '(-> number string) '()) ; => ERROR
 
+(type-check (no-eval (typed-lambda (: x number)
+				   (typed-lambda (: y string)
+						 y)))
+	    '(-> number (-> string string)) '())
