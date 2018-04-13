@@ -53,3 +53,17 @@ The expression is evaluated
      (quote expr))))
 #+END_SRC
 
+** Using the pattern matcher in =linear-match=
+
+=linear-match.scm= contains the pattern matcher found at [[http://okmij.org/ftp/Scheme/macros.html#match-case-simple]]
+
+Each pattern is required to have a guard. =()= is the empty guard.
+=(,x)= represents a variable. Will be bound as =x= if matched.
+
+Examples
+#+BEGIN_SRC scheme
+(define (sum-list ls)
+  (match ls
+    (() () 0) ; match with empty list
+    ((,x . ,xs) (number? x) (+ x (sum-list xs)))))
+#+END_SRC
