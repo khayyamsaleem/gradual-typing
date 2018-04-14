@@ -78,7 +78,6 @@
      ;;        (: (lambda (x) (+ x 1)) (-> number number))
      val)))
 
-
 (define (type-check expr type gamma)
   (match expr
     ;; For now it seems hard to not evaluate certain
@@ -88,16 +87,24 @@
 
     (,x (symbol? x) (if (assoc x gamma)
 			(let ((bound-type (cdr (assoc x gamma))))
-			  (if (equal? type bound-type)
+			  (if (~ type bound-type)
 			      (cdr (assoc x gamma))
-			      (error "Type checking faied -- " expr 'with type)))
+			      (error "Type checking failed -- " expr 'with type)))
 			type))
 
     (,x (and (number? x) (~ type 'number)) type)
 
     (,x (and (boolean? x) (~ type 'boolean)) type)
 
-    (,x (assoc x gamma) (cdr (assoc x gamma)))
+    (,x (assoc x gamma) (~ (cdr (assoc x gamma)) type))
+
+    ((,rator ,rand) () ;; Doesn't work always. Need to incorporate information about codomain
+                       ;; of function?
+     (let ((t-rator (type-check rator `(-> any ,type) gamma)))
+       (if (arrow-type? t-rator)
+	   (let ((sigma (domain t-rator)))
+	     (type-check rand sigma gamma))
+	   (error "Attempt to apply --" t-rator 'as 'a 'function))))    
 
     ;; We should not be doing this. Need to resolve
     ;; types of internal procedures in some other manner
@@ -106,13 +113,14 @@
     (('* ,x . ,y) (~ type 'number) type)
     (('/ ,x . ,y) (~ type 'number) type)
 
+    ;;;; Note that this is the only annotated expression
     (('typed-lambda (: ,x ,s) ,body) (arrow-type? type)
      (if (not (~ s (domain type)))
 	 (error "Inconsistent parameter type -- " s 'with (domain type))
 	 (let ((param-type s))
 	   (make-arrow param-type
 		       (type-check body (codomain type) (cons (cons x param-type) gamma))))))
-    
+
     (__ () (error "Type checking failed -- " expr 'with type))))
 
 
@@ -133,3 +141,9 @@
 				   (typed-lambda (: y string)
 						 y)))
 	    '(-> number (-> string string)) '())
+
+(type-check (no-eval ((typed-lambda (: x number) (+ x 1)) 3))
+	    'number '()) ; => number
+
+(type-check (no-eval (function1 3)) 'string '((function1 . (-> number string))))
+
