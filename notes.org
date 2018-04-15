@@ -25,6 +25,7 @@ Get value from the environment
 - =fixnum= : an integer constant. e.g. =1=
 - =ratnum= : a rational constant e.g. =(/ 1 2)=
 - =flonum= : a floating point constant e.g. =1.0=
+- =recnum= : a complex number e.g. =3+4i=
 - =string= : a string e.g. =("H")=
 - =character= : a character e.g. =#\c=
 - =pair= : a cons cell e.g. =(1 . 2)=
@@ -67,3 +68,76 @@ Examples
     (() () 0) ; match with empty list
     ((,x . ,xs) (number? x) (+ x (sum-list xs)))))
 #+END_SRC
+
+
+** Type consistency =~=
+
+All of this can be found in the file =first.scm=
+
+Implements the following rules
+
+$$\tau \sim \tau$$
+
+$$\frac{\sigma_1 \sim \tau_1 \qquad \sigma_2 \sim \tau_2}{\sigma_1 \rightarrow \sigma_2 \sim \tau_1 \rightarrow \tau_2}$$
+
+$$\tau \sim ?$$
+
+$$? \sim \tau$$
+
+
+#+BEGIN_SRC scheme
+(define (~ type1 type2)
+  (cond ((or (any-type? type1) (any-type? type2)) #t)
+	((equal? type1 type2) #t)
+	((and (pair? type1) (pair? type2))
+	 (and (~ (car type1) (car type2))
+	      (~ (cdr type1) (cdr type2))))
+	(else #f)))
+#+END_SRC
+
+m** Type Checker -- =typed-lambda=
+
+All of this can be found in the file =first.scm=
+
+Implements the typing rule
+
+$$\frac{\Gamma, x:\sigma \vdash e : \tau}{\Gamma \vdash (\lambda x : \sigma . e) : \sigma \rightarrow \tau}$$
+
+The =typed-lambda= form simply evaluates to a =lambda= expression for now.
+Later on, we will want to use =type-check= on the expression first.
+
+Examples of =typed-lambda=
+
+#+BEGIN_SRC scheme
+(define inc (typed-lambda (: x 'number) (+ x 1)))
+
+(define len
+  (typed-lambda (: x 'list)
+		(if (null? x)
+		    0
+		    (+ 1 (len (cdr x))))))
+
+(define apply-func
+  (typed-lambda (: f '(-> any any))
+		(typed-lambda (: x 'any)
+			      (f x))))
+
+#+END_SRC
+
+#+BEGIN_SRC scheme
+(define (type-check expr type gamma)
+  (match expr
+    ...					; Lot more here
+
+    (('typed-lambda (: ,x ,s) ,body) (arrow-type? type)
+     (if (not (~ s (domain type)))
+	 (error "Inconsistent parameter type -- " s 'with (domain type))
+	 (let ((param-type s))
+	   (make-arrow param-type
+		       (type-check body
+				   (codomain type)
+				   (cons (cons x param-type) gamma))))))
+
+    (__ () (error "Type checking failed -- " expr 'with type))))
+#+END_SRC
+
