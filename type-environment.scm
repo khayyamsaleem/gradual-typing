@@ -157,3 +157,24 @@
 				       (extend gamma (cadr param) (domain type))))
 	(error "Inconsistent types --" p-type 'with type 'for expr))))
 
+(define-syntax fn
+  (syntax-rules (:)
+    ((_ (: v type) body)
+     (begin (display '(typed-lambda (: v type) body)) (newline)
+	    (let ((t (type-check '(typed-lambda (: v type) body)
+				 '(-> type any)
+				 '())))
+	      (if t
+		  (make-apply-hook (lambda (v) body)
+				   (list t (generate-uninterned-symbol)))
+		  (error "Invalid type")))))))
+
+(define fact
+  (fn (: n number)
+      (if (< n 1)
+	  1
+	  (* n (fact (- n 1))))))
+
+
+
+
