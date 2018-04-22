@@ -176,6 +176,17 @@ $$\frac{\Gamma,x_i^{i\in1,\dots,n}:\sigma \vdash M : \tau}{\Gamma \vdash \lambda
 
 $$\frac{\Gamma \vdash M : \sigma \rightarrow_n \tau \quad \Gamma \vdash N_i^{i \in 1,\dots,n} : \sigma}{\Gamma \vdash (M N_1 N_2 \dots N_n) : \tau}$$
 
+* Type Checking without Casting
+
+The following passes the current type checker.
+
+#+BEGIN_SRC scheme
+(type-check '((typed-lambda (:: x number) (+ x 1)) "H") 'any '())
+#+END_SRC
+
+There doesn't seem to be a straightforward way to add the =typed-lambda= expression to
+the type environment (=()= here). Took a look at the main paper again, and it seems like
+casting is one way this issue can be avoided. 
 
 * Casting to an Intermediate Language
 
@@ -183,6 +194,8 @@ This is probably the approach we should take. It is also the one described in "G
 for Functional Languages"
 
 ** Cast Insertion
+
+For right now, we'll implement the following rules. 
 
 Rule for variables. $\lfloor \tau \rfloor$ represents an optional type. We are going to set this to the =any= type
 as a default. 
