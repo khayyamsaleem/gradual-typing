@@ -1,5 +1,15 @@
 * Notes
 
+** TODO [0/4]
+- [ ] Improve `cast' function (n-ary functions)
+  - [ ] Change n-ary to n partial applications
+- [ ] Type Checker for $\lambda_{\rightarrow}^{\langle \tau \rangle}$
+- [ ] Custom Reader
+  - [ ] Read Scheme files
+  - [ ] Cast, Type Check
+  - [ ] Send to compiler :  =cf=
+- [ ] Handle REPL
+
 ** Useful environments
 
 #+BEGIN_SRC scheme
@@ -227,3 +237,26 @@ Will look something like this
     ((,e1 . ,e2) ... rules for application)))
 #+END_SRC
 
+** Cast expressions
+
+Syntax is =(: <expr> <type>)=
+
+#+BEGIN_SRC scheme
+(castu '(fn (: x number) x) '())
+ => (: (fn (: x number) (: x number)) (-> number number))
+
+(castu '(f x) '())
+ => (: ((: f (-> any any)) (: x any)) any)
+
+(castu '(f x) '((x . number)))
+ => (: ((: f (-> number any)) (: x number)) any)
+
+(castu '(is-zero? x) '((is-zero? . (-> number boolean))))
+ => (: ((: is-zero? (-> number boolean)) (: x number)) boolean)
+
+(castu '(f (x y)) '())
+ => (: ((: f (-> any any)) (: ((: x (-> any any)) (: y any)) any)) any)
+
+(castu '((f x) y) '())
+ => (: ((: ((: f (-> any any)) (: x any)) (-> any any)) (: y any)) any)
+#+END_SRC
