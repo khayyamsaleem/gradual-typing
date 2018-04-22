@@ -95,7 +95,7 @@ $$? \sim \tau$$
 	(else #f)))
 #+END_SRC
 
-m** Type Checker -- =typed-lambda=
+** Type Checker -- =typed-lambda=
 
 All of this can be found in the file =first.scm=
 
@@ -139,5 +139,78 @@ Examples of =typed-lambda=
 				   (cons (cons x param-type) gamma))))))
 
     (__ () (error "Type checking failed -- " expr 'with type))))
+#+END_SRC
+
+** Dealing with n-ary functions
+
+$$\sigma \rightarrow_{n} \tau \equiv \underbrace{\sigma \times \sigma \times \dots \times \sigma}_{n} \rightarrow \tau$$
+
+** Types
+
+#+BEGIN_SRC scheme
+(->n number number)
+(-> number (-> boolean any))
+(->2 number boolean)
+(-> (* number number) boolean)
+(-> (* number boolean) string)
+#+END_SRC
+
+** Typing Rules
+
+*Will have to rethink these rules. Approach now is to first cast Scheme expressions and then type-check*
+
+*** Variables
+$$\frac{\Gamma(x) = \sigma}{\Gamma \vdash x : \sigma}$$
+
+*** Abstractions
+
+**** unary
+$$\frac{\Gamma, x:\sigma \vdash M : \tau}{\Gamma \vdash \lambda x:\sigma.M :\sigma \rightarrow \tau}$$
+
+**** n-ary 
+$$\frac{\Gamma, x_1 : \sigma_1, x_2 : \sigma_2, \dots, x_n : \sigma_n \vdash M : \tau}{\Gamma \vdash \lambda (x_1:\sigma_1,x_2:\sigma_2,\dots,x_n:\sigma_n).M : \sigma_1 \times \sigma_2 \times \dots \times \sigma_n \rightarrow \tau}$$
+
+$$\frac{\Gamma,x_i^{i\in1,\dots,n}:\sigma \vdash M : \tau}{\Gamma \vdash \lambda (x_1:\sigma,x_2:\sigma,\dots,x_n:\sigma).M : \sigma \rightarrow_{n} \tau}$$
+
+*** Application
+
+$$\frac{\Gamma \vdash M : \sigma \rightarrow_n \tau \quad \Gamma \vdash N_i^{i \in 1,\dots,n} : \sigma}{\Gamma \vdash (M N_1 N_2 \dots N_n) : \tau}$$
+
+
+* Casting to an Intermediate Language
+
+This is probably the approach we should take. It is also the one described in "Gradual Typing
+for Functional Languages"
+
+** Cast Insertion
+
+Rule for variables. $\lfloor \tau \rfloor$ represents an optional type. We are going to set this to the =any= type
+as a default. 
+
+$$\frac{\Gamma x = \lfloor \tau \rfloor}{\Gamma \vdash x \Rightarrow x : \tau}$$
+
+Rule for predefined types and constants. Think =+=, =*=, =>=, =<=, and so on
+$$\frac{\Delta c = \tau}{\Gamma \vdash c \Rightarrow c : \tau}$$
+
+Rule for $\lambda$
+$$\frac{\Gamma, x : \sigma \vdash e \Rightarrow e^' : \tau}{\Gamma \vdash \lambda x : \sigma . e \Rightarrow \lambda x : \sigma . e^' : \sigma \rightarrow \tau}$$
+
+Rule for application. The rules depend on the information available in $\Gamma$
+$$\frac{\Gamma \vdash e_1 \Rightarrow e_1^' : ? \quad \Gamma \vdash e_2 \Rightarrow e_2^' : \tau_2}{\Gamma \vdash e_1 e_2 \Rightarrow (\langle \tau_2 \rightarrow ? \rangle e_1^') e_2^' : ?}$$
+
+$$\frac{\Gamma \vdash e_1 \Rightarrow e_1^' : \tau \rightarrow \tau^' \quad \Gamma \vdash e_2 \Rightarrow e_2^' : \tau_2 \quad \tau_2 \neq \tau \quad \tau_2 \sim \tau}{\Gamma \vdash e_1 e_2 \Rightarrow e_1^' (\langle \tau \rangle e_2^') : \tau^'}$$
+
+$$\frac{\Gamma \vdash e_1 \Rightarrow e_1^' : \tau \rightarrow \tau^' \quad \Gamma \vdash e_2 \Rightarrow e_2^' : \tau}{\Gamma \vdash e_1 e_2 \Rightarrow e_1^' e_2^' : \tau^'}$$
+
+** Casting Function
+
+Will look something like this
+
+#+BEGIN_SRC scheme
+(define (cast e Γ)
+  (pmatch expr
+    (,e (guard (symbol? e)) `(: e (lookup Γ e)))  
+    ((λ (: ,x ,type) ,body) `(λ (: x type) (cast body (extend Γ x type))))
+    ((,e1 . ,e2) ... rules for application)))
 #+END_SRC
 
