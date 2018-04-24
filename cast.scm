@@ -154,10 +154,19 @@
    (,e (guard (symbol? e))
        (let ((typed? (te/lookup te e)))
 	 (if typed? (make-cast e typed?) (make-cast e 'any))))
+   
    ((fn (: ,v ,type) ,body)
     (let* ((body-cast (castu body (cons (cons v type) te)))
 	   (co-domain-type (type-of-cast body-cast)))
       (make-cast `(fn (: ,v ,type) ,body-cast) (make-arrow-type type co-domain-type))))
+   
+   ((fn (: ,v ,type) (: ,ret-type) ,body)
+    (let* ((body-cast (castu body (cons (cons v type) te)))
+	   (co-domain-type (type-of-cast body-cast)))
+      (if (~ co-domain-type ret-type)
+	  (make-cast `(fn (: ,v ,type) ,body-cast) (make-arrow-type type ret-type))
+	  (error "CastError --" expr))))
+   
    ((,rator ,rand)
     (let* ((rator-cast (castu rator te))
 	   (rator-type (type-of-cast rator-cast))
@@ -172,8 +181,12 @@
 		  (make-cast (list rator-cast (make-cast (un-cast rand-cast) (domain rator-type)))
 			     (co-domain rator-type))
 		  (error "CastError --" expr))))))
+   
+   (,e (guard (number? e)) (make-cast e 'number))
+   (,e (guard (string? e)) (make-cast e 'string))
+   (,e (guard (boolean? e)) (make-cast e 'boolean))
    (,e (make-cast e (car (dispatch-tag-contents (dispatch-tag e)))))
-   ;; (,e (guard (number? e)) (make-cast e 'number))
-   ;; (,e (guard (string? e)) (make-cast e 'string))
-   ;; (,e (guard (boolean? e)) (make-cast e 'boolean))
    (else (error "Not implemented"))))
+
+
+
