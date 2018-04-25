@@ -7,6 +7,9 @@
 (define (any-type? type)
   (eq? type 'any))
 
+(define (unit-type? type)
+  (eq? type 'unit))
+
 (define (make-arrow-type s t)
   `(-> ,s ,t))
 

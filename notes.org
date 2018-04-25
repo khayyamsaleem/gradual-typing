@@ -239,6 +239,8 @@ Will look something like this
 
 ** Cast expressions
 
+The =cast= function should be idempotent. 
+
 Syntax is =(: <expr> <type>)=
 
 #+BEGIN_SRC scheme
