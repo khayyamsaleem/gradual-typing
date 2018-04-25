@@ -91,7 +91,7 @@
        (let* ((body-cast (cast body te))
 	      (co-domain-type (type-of-cast body-cast)))
 	 (make-cast `(fn () ,body-cast) (make-arrow-type 'unit co-domain-type))))
-   
+
       ((,rator ,rand)
        (let* ((rator-cast (cast rator te))
 	      (rator-type (type-of-cast rator-cast))
@@ -262,6 +262,120 @@
 	 ((: ,e string) (guard (string? e)) 'string)
 	 ((: ,e char) (guard (char? e)) 'char)
 	 (else 'not-implemented)))))
+
+
+(define (te/ext te var type)
+  (let ((binding (assoc var te)))
+    (if binding
+	(begin (set-cdr! binding type) te)
+	(cons (cons var type) te))))
+
+(define (te/look te var)
+  (let ((binding (assoc var te)))
+    (if binding
+	(cdr binding)
+	#f)))
+
+(define (te/join te1 te2)
+  (if (null? te1) te2
+      (let ((binding (assoc (caar te1) te2)))
+	(if binding
+	    (if (~ (cdr binding) (cdar te1))
+		(te/join (cdr te1) te2)
+		(error "Inconsistent types in Environments"))
+	    (cons (car te1) (te/join (cdr te1) te2))))))
+
+(define (te/del te var)
+  (del-assoc var te))
+
+;; (define (type-check expr te)
+;;   (let ((cexpr (cast expr te)))
+;;     (pmatch
+;;      cexpr
+;;      ((: ,e ,type) (guard (symbol? e))
+;;       (let ((binding (te/look te e)))
+;; 	(if binding
+;; 	    (if (~ binding type)
+;; 		te
+;; 		(error "Inconsistent types" 'expected type 'got binding 'for e))
+;; 	    (te/ext te e type))))
+;;      ((: (,rator ,rand) ,type)
+;;       ;; need to change this?
+;;       (let* ((tc-rator (type-check rator te))
+;; 	     (tc-rand (type-check rand te)))
+;; 	(if (~ (co-domain (type-of-cast rator)) type)
+;; 	    (if (~ (domain (type-of-cast rator)) (type-of-cast rand))
+;; 		(te/join tc-rand tc-rator)
+;; 		(error "Inconsistent types" 'expected (domain (type-of-cast rator))
+;; 		       'got (type-of-cast rand) 'for (expr-of-cast rand)))
+;; 	    (error "Inconsistent types" 'expected type 'got (type-of-cast rator) 'for
+;; 		   (expr-of-cast rator)))))
+;;      (else 'not-implemented))))
+
+(define (type-check expr te)
+  (define (tc exp type te)
+    (pmatch
+     exp
+     ((: ,e ,t) (guard (and (~ type t) (not (equal? type t)))) ; TCAST
+      (begin (display e) (display " : Cast => ") (display t) (display " ") (display type) (newline))
+      (tc `(: ,e ,type) type te))
+     ((: ,e ,t) (guard (and (symbol? e))) ; TVAR
+      (let ((binding (te/look te e)))
+	(if binding
+	    (begin (display e) (display " : Binding => ") (display binding) (newline)
+		   (if (~ binding type)
+		       (te/ext te e type)
+		       (error "Inconsistent types" 'exptected type 'got binding 'for e)))
+	    (begin (display e) (display " : NotBound => ") (display type) (newline)
+		   (te/ext te e type)))))
+     ((: (,rator ,rand) ,t) ;; (guard (equal? type t))
+      (let* ((tc-rator (tc rator `(-> ,(type-of-cast rand) ,type) te))
+	     (tc-rand (tc rand (domain (type-of-cast rator)) te)))
+	(te/join tc-rator tc-rand)))
+     ((: (fn (: ,v ,s) ,body) ,t)
+      (let* ((tc-body (tc body (co-domain type) (te/ext te v s))))
+	(te/del tc-body v)))
+     ((: (fn (: ,v ,s) (: ,ret) ,body) ,t)
+      (let* ((tc-body (tc body ret (te/ext te v s))))
+	(te/del tc-body v)))
+     ((: ,e number) (guard (number? e)) te)
+     ((: ,e string) (guard (string? e)) te)
+     ((: ,e boolean) (guard (boolean? e)) te)
+     ((: ,e char) (guard (char? e)) te)
+     (else 'not-implemented)))
+  (let ((c (cast expr te)))
+    (tc c (type-of-cast c) te)))
+
+(define (tc1 exp type te)
+    (pmatch
+     (cast exp te)
+     ((: ,e ,t) (guard (and (~ type t) (not (equal? type t)))) ; TCAST
+      (begin (display e) (display " : Cast => ") (display t) (display " ") (display type) (newline))
+      (tc1 `(: ,e ,type) type te))
+     ((: ,e ,t) (guard (and (symbol? e))) ; TVAR
+      (let ((binding (te/look te e)))
+	(if binding
+	    (begin (display e) (display " : Binding => ") (display binding) (newline)
+		   (if (~ binding type)
+		       (te/ext te e type)
+		       (error "Inconsistent types" 'exptected type 'got binding 'for e)))
+	    (begin (display e) (display " : NotBound => ") (display type) (newline)
+		   (te/ext te e type)))))
+     ((: (,rator ,rand) ,t) ;; (guard (equal? type t))
+      (let* ((tc-rator (tc1 rator `(-> ,(type-of-cast rand) ,type) te))
+	     (tc-rand (tc1 rand (domain (type-of-cast rator)) te)))
+	(te/join tc-rator tc-rand)))
+     ((: (fn (: ,v ,s) ,body) ,t)
+      (let* ((tc-body (tc1 body (co-domain type) (te/ext te v s))))
+	(te/del tc-body v)))
+     ((: (fn (: ,v ,s) (: ,ret) ,body) ,t)
+      (let* ((tc-body (tc1 body ret (te/ext te v s))))
+	(te/del tc-body v)))
+     ((: ,e number) (guard (number? e)) te)
+     ((: ,e string) (guard (string? e)) te)
+     ((: ,e boolean) (guard (boolean? e)) te)
+     ((: ,e char) (guard (char? e)) te)
+     (else 'not-implemented)))
 
 (define
   example-1
