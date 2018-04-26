@@ -65,6 +65,18 @@
 	     (co-domain arrow-type))))
       arrow-type))
 
+(define (pair->nary type)
+  (define (all-equal? ls)
+    (or (or (null? ls) (null? (cdr ls)))
+	(and (equal? (car ls) (cadr ls))
+	     (all-equal? (cdr ls)))))
+  (if (arrow-type? type)
+      (let ((d (domain type)))
+	(if (and (pair-type? d) (all-equal? (cdr d)))
+	    (make-arrow-type-arity (cadr d) (co-domain type) (pair-arity d))
+	    type))
+      type))
+
 (define (make-list-type base-type)
   `(list ,base-type))
 
