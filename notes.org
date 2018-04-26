@@ -1,9 +1,10 @@
 * Notes
 
-** TODO [0/4]
+** TODO [0/5]
 - [ ] Improve `cast' function (n-ary functions)
   - [ ] Change n-ary to n partial applications
 - [ ] Type Checker for $\lambda_{\rightarrow}^{\langle \tau \rangle}$
+- [ ] Change =~= to work with pair and =->n= types
 - [ ] Custom Reader
   - [ ] Read Scheme files
   - [ ] Cast, Type Check
