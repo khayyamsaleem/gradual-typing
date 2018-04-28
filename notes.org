@@ -1,3 +1,7 @@
+#+TITLE: Notes
+#+AUTHOR: Khayyam Saleem, Ramana Nagasamudram
+#+DATE: 
+
 * Notes
 
 ** TODO [0/5]
@@ -263,3 +267,80 @@ Syntax is =(: <expr> <type>)=
 (castu '((f x) y) '())
  => (: ((: ((: f (-> any any)) (: x any)) (-> any any)) (: y any)) any)
 #+END_SRC
+
+
+* The usual suspects
+
+** self application
+
+*** OCaml
+#+BEGIN_SRC ocaml
+fun x -> x x;;
+(* This expression has type 'a -> 'b but an expression was
+   expected of type 'a. The type variable 'a occurs inside 'a -> 'b *)
+#+END_SRC
+
+*** Typed Racket
+#+BEGIN_SRC racket
+(lambda (x) (x x))
+;; Type Checker: missing type for identifier;
+#+END_SRC
+
+#+BEGIN_SRC racket
+(lambda ([x : (-> Any Any)]) (x x))
+;; - : (-> (-> Any Any) Any)
+#+END_SRC
+
+#+BEGIN_SRC racket
+(lambda ([x : (-> Any Any)]) (x (x x)))
+;; - : (-> (-> Any Any) Any)
+#+END_SRC
+
+** double/apply-twice
+
+*** OCaml
+#+BEGIN_SRC ocaml
+fun f x -> f (f x);;
+(* : - : ('a -> 'a) -> 'a -> 'a = <fun> *)
+#+END_SRC
+
+*** Typed Racket
+#+BEGIN_SRC racket
+(lambda ([f : (-> Any Any)] [x : Number]) (f (f x)))
+;; - : (-> (-> Any Any) Number Any)
+#+END_SRC
+
+#+BEGIN_SRC racket
+(lambda (f x) (f (f x)))
+;; Type Checker: Cannot apply expression of type Any, 
+;; since it is not a function type
+#+END_SRC
+
+** different brach types for if
+
+*** OCaml
+#+BEGIN_SRC ocaml
+fun x -> if x > 0 then 1 else false;;
+(* Error: This expression has type bool but an expression was expected of type int *)
+#+END_SRC
+
+*** Typed Racket
+#+BEGIN_SRC racket
+(lambda ([x : Real]) (if (> x 0) 1 #f))
+;; - : (-> Real (U False One))
+#+END_SRC
+
+** different types in containers
+
+*** OCaml
+#+BEGIN_SRC ocaml
+[1; false; "string"];;
+(* This expression has type bool but an expression was expected of type int *)
+#+END_SRC
+
+*** Typed Racket
+#+BEGIN_SRC racket
+'(1 #f "string")
+;; - : (Listof (U False One String)) [mode precisely: (List One False String)]
+#+END_SRC
+

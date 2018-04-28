@@ -196,6 +196,7 @@
 (define (te/del te var)
   (del-assoc var te))
 
+;; te/ext is the root of all evil. Just use (cons (cons v type) te)
 (define (type-check expr te)
   (define (tc exp type te)
     (pmatch
@@ -210,15 +211,24 @@
 		   (if (~ binding type)
 		       ;; (te/ext te e type)
 		       (te/ext te e binding)
+		       ;; (cons (cons e binding) te)
 		       (error "Inconsistent types" 'exptected type 'got binding 'for e)))
 	    (begin (display e) (display " : NotBound => ") (display type) (newline)
-		   (te/ext te e type)))))
+		   (te/ext te e type)
+		   ;; (cons (cons e type) te)
+		   ))))
      ((: (fn (: ,v ,s) ,body) ,t)
-      (let* ((tc-body (tc body (co-domain type) (te/ext te v s))))
-	(te/del tc-body v)))
+      (let* ((tc-body (tc body (co-domain type) ;; (te/ext te v s)
+			  (cons (cons v s) te))))
+	(te/del tc-body v)
+	;; te
+	))
      ((: (fn (: ,v ,s) (: ,ret) ,body) ,t)
-      (let* ((tc-body (tc body ret (te/ext te v s))))
-	(te/del tc-body v)))
+      (let* ((tc-body (tc body ret ;; (te/ext te v s)
+			  (cons (cons v s) te))))
+	(te/del tc-body v)
+	;; te
+	))
      ((: (fn ((: ,v ,s) . ,rest) ,body) ,t)
       (display "*") (newline)
       (let* ((bindings (map (lambda (x) (cons (expr-of-cast x)
@@ -227,7 +237,9 @@
 						 (cons (cons v s) bindings) te))))
 	(display tc-body) (newline)
 	(fold-right (lambda (x acc) (te/del acc (car x))) tc-body
-		    (append (cons (cons v s) bindings)))))
+		    (append (cons (cons v s) bindings)))
+	;; te
+	))
      ((: (fn () ,body) ,t)
       (let* ((tc-body (tc body (co-domain type) te)))
 	tc-body))

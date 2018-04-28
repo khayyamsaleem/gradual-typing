@@ -200,42 +200,6 @@
    (else (tc-error expr type #f))))
 
 
-(define (cast expr te)
-  (pmatch
-   expr
-   (,e (guard (predefined? e))
-       `(: ,e ,(get-predefined-type e)))
-   (,e (guard (symbol? e))
-       (let ((type (te/lookup te e)))
-	 (if type
-	     `(: ,e ,type)
-	     `(: ,e any))))
-   ((lambda (,v) ,body)
-    (let* ((v-cast (cast v te))
-	   (te2 (te/extend te v (caddr v-cast))))
-      ;; `(typed-lambda ,v-cast ,(map (lambda (x) (cast x te2)) body))
-      `(typed-lambda ,v-cast ,(cast body te2))
-      ))
-   ((lambda ,vs ,body)
-    (let* ((v-cast (map (lambda (x) (cast x te)) vs)))
-      `(typed-lambda ,v-cast ,(cast body te))))
-   ((,rator . ,rands)
-    (let* ((r-cast (cast rator te))
-	   (te2 (te/extend te rator (caddr r-cast))))
-      `(,r-cast ,@(map (lambda (x) (cast x te2)) rands))))
-   (else `(: ,expr ,(car (dispatch-tag-contents (dispatch-tag expr)))))))
-
-(define (uncast expr)
-  (pmatch
-   expr
-   ((: ,e ,type) e)
-   ((typed-lambda (: ,v ,type) ,body)
-    `(lambda (,v) ,(uncast body)))
-   ((,e . ,es)
-    (cons (uncast e) (uncast es)))
-   (else expr)))
-
-
 #|
 	Examples
 |#
