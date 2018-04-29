@@ -344,3 +344,47 @@ fun x -> if x > 0 then 1 else false;;
 ;; - : (Listof (U False One String)) [mode precisely: (List One False String)]
 #+END_SRC
 
+* A note on self application
+
+** Typed Racket
+
+Can write a function that performs self application, but we don't get anything we can use
+from it
+
+#+BEGIN_SRC racket
+(define self-app (lambda ([x : (-> Any Any)]) (x x)))
+(define iden (lambda (x) x))
+
+(self-app iden) ; Type : Any ; Value : #<procedure:iden>
+((self-app iden) 1) ; ERROR
+#+END_SRC
+
+Here is how it works in Scheme
+
+#+BEGIN_SRC scheme
+(define self-app (lambda (x) (x x)))
+(define iden (lambda (x) x))
+(self-app iden) ; #<procedure>
+((self-app iden) 1) ; 1
+#+END_SRC
+
+
+* A note on =DOUBLE= in typed racket
+
+#+BEGIN_SRC racket
+(lambda ([f : (-> Any Any)] [x : Number])
+  (f (f x)))
+;; (-> (-> Any Any) Number Any)
+#+END_SRC
+
+#+BEGIN_SRC racket
+(lambda ([f : (-> Any Number)] [x : Number])
+  (f (f x)))
+;; (-> (-> Any Number) Number Number)
+#+END_SRC
+
+#+BEGIN_SRC racket
+(lambda ([f : (-> Number Any)] [x : Number])
+  (f (f x)))
+;; type mismatch, expected : Number, given : Any
+#+END_SRC
