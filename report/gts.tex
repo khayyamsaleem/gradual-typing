@@ -1,0 +1,151 @@
+% Created 2018-04-29 Sun 18:32
+% Intended LaTeX compiler: pdflatex
+\documentclass[presentation]{beamer}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{graphicx}
+\usepackage{grffile}
+\usepackage{longtable}
+\usepackage{wrapfig}
+\usepackage{rotating}
+\usepackage[normalem]{ulem}
+\usepackage{amsmath}
+\usepackage{textcomp}
+\usepackage{amssymb}
+\usepackage{capt-of}
+\usepackage{hyperref}
+\setbeamertemplate{navigation symbols}{}
+\AtBeginSection[]{\begin{frame}<beamer>\frametitle{Topic}\tableofcontents[currentsection]\end{frame}}
+\usetheme{default}
+\author{Ramana Nagasamudram, Khayyam Saleem}
+\date{}
+\title{Gradual Typing}
+\subtitle{An Introduction and an Implementation in MIT/GNU Scheme}
+\institute[CS810]{CS810 -- Type Systems for Programming Languages}
+\hypersetup{
+ pdfauthor={Ramana Nagasamudram, Khayyam Saleem},
+ pdftitle={Gradual Typing},
+ pdfkeywords={},
+ pdfsubject={},
+ pdfcreator={Emacs 26.1 (Org mode 9.1.9)}, 
+ pdflang={English}}
+\begin{document}
+
+\maketitle
+\begin{frame}{Outline}
+\tableofcontents
+\end{frame}
+
+
+
+\section{Gradual Typing}
+\label{sec:orgdf9c309}
+\begin{frame}[label={sec:orga259e2e}]{Concept}
+\begin{itemize}
+\item Type system developed by Jeremy Siek and Walid Taha in 2006
+\item Allows some parts of a program to be dynamically typed and other parts to be statically typed
+\begin{itemize}
+\item Determined by presence of type annotation added by programmer
+\end{itemize}
+\end{itemize}
+\end{frame}
+\begin{frame}[label={sec:orgc925b5e}]{Static Typing}
+\begin{itemize}
+\item Process of verifying the type safety of a program based on analysis of a program's source code
+\item If a program passes a static type checker, then the program is guaranteed to satisfy some set of type safety properties for all possible inputs
+\item Type checking completed during compilation process
+\end{itemize}
+
+
+
+\begin{columns}
+\begin{column}{0.5\columnwidth}
+\begin{itemize}
+\item Pros
+\begin{itemize}
+\item catches bugs early
+\item faster execution
+\item improves modularity
+\end{itemize}
+\end{itemize}
+\end{column}
+
+
+\begin{column}{0.5\columnwidth}
+\begin{itemize}
+\item Cons
+\begin{itemize}
+\item makes code more verbose
+\item prevents program execution
+\end{itemize}
+\end{itemize}
+\end{column}
+\end{columns}
+\end{frame}
+
+\begin{frame}[label={sec:org0806ef4}]{Dynamic Typing}
+\begin{itemize}
+\item Process of type-checking at run-time
+\item Associates each runtime object with a \emph{type tag}
+\end{itemize}
+
+
+\begin{columns}
+\begin{column}{0.5\columnwidth}
+\begin{itemize}
+\item Pros
+\begin{itemize}
+\item offers flexibility
+\item doesn't get "in the way" of execution
+\item allows for typing based on runtime information
+\end{itemize}
+\end{itemize}
+\end{column}
+
+\begin{column}{0.5\columnwidth}
+\begin{itemize}
+\item Cons
+\begin{itemize}
+\item cannot conclusively declare safety
+\item errors may lie deep in subroutine calls
+\item slower execution
+\end{itemize}
+\end{itemize}
+\end{column}
+\end{columns}
+\end{frame}
+
+\begin{frame}[label={sec:orge735448}]{Utility of Gradual Typing}
+\begin{itemize}
+\item Gradual typing allows for type checks at compile-time for type errors in some parts of a program, directed by type annotations.
+\item Since it is tough to declare that static typing is universally better or worse than dynamic typing, gradual typing offers the programmer a choice, without requiring a change in language
+\end{itemize}
+\end{frame}
+
+\begin{frame}[label={sec:orga1eeddf}]{Attempt with Subtyping}
+\end{frame}
+\begin{frame}[label={sec:orgb5e6399}]{Type Consistency}
+\end{frame}
+\section{\(\lambda_{\rightarrow}^?\)}
+\label{sec:org1741458}
+\begin{frame}[label={sec:orgc9834ea}]{Syntax}
+\end{frame}
+\begin{frame}[label={sec:orga5189c8}]{Typing Rules}
+\end{frame}
+\begin{frame}[label={sec:orga9b7c6a}]{Relation to simply-typed \(\lambda\)-calculus}
+\end{frame}
+\begin{frame}[label={sec:orgb84a370}]{Run-time Semantics}
+\end{frame}
+\section{\(\lambda_{\rightarrow}^{\langle\tau\rangle}\)}
+\label{sec:org4edfcdd}
+\begin{frame}[label={sec:orgc4b441c}]{First-order example}
+\end{frame}
+\begin{frame}[label={sec:org39c3398}]{Higher-order example}
+\end{frame}
+\section{Implementation}
+\label{sec:org338c809}
+\begin{frame}[label={sec:orgff5b5f2}]{Existing Implementations}
+\end{frame}
+\begin{frame}[label={sec:org4671385}]{MIT/GNU Scheme Implementation}
+\end{frame}
+\end{document}

@@ -1,0 +1,83 @@
+#+STARTUP: noindent showall beamer
+#+TITLE: Gradual Typing
+#+OPTIONS: toc:t H:2 date:nil
+#+BEAMER_FRAME_LEVEL: 2
+#+LATEX_HEADER: \setbeamertemplate{navigation symbols}{}
+#+SUBTITLE: An Introduction and an Implementation in MIT/GNU Scheme
+#+latex_header: \AtBeginSection[]{\begin{frame}<beamer>\frametitle{Topic}\tableofcontents[currentsection]\end{frame}}
+#+BEAMER_HEADER: \institute[CS810]{CS810 -- Type Systems for Programming Languages}
+#+COLUMNS: %40ITEM %10BEAMER_env(Env) %9BEAMER_envargs(Env Args) %4BEAMER_col(Col) %10BEAMER_extra(Extra)
+#+AUTHOR: Ramana Nagasamudram, Khayyam Saleem
+
+
+* Gradual Typing
+** Concept
+   - Type system developed by Jeremy Siek and Walid Taha in 2006
+   - Allows some parts of a program to be dynamically typed and other parts to be statically typed
+     - Determined by presence of type annotation added by programmer
+** Static Typing
+   - Process of verifying the type safety of a program based on analysis of a program's source code
+   - If a program passes a static type checker, then the program is guaranteed to satisfy some set of type safety properties for all possible inputs
+   - Type checking completed during compilation process
+     
+
+
+*** Pros                           :BMCOL:
+    :PROPERTIES:
+    :BEAMER_col: 0.5
+    :END:
+    - Pros
+     - catches bugs early
+     - faster execution
+     - improves modularity
+
+
+*** Cons                           :BMCOL:
+    :PROPERTIES:
+    :BEAMER_col: 0.5
+    :END:
+    - Cons
+     - makes code more verbose
+     - prevents program execution
+     
+** Dynamic Typing
+   - Process of type-checking at run-time
+   - Associates each runtime object with a /type tag/
+
+     
+*** Pros                           :BMCOL:
+    :PROPERTIES:
+    :BEAMER_col: 0.5
+    :END:
+    - Pros
+     - offers flexibility
+     - doesn't get "in the way" of execution
+     - allows for typing based on runtime information
+
+*** Cons                           :BMCOL:
+    :PROPERTIES:
+    :BEAMER_col: 0.5
+    :END:
+    - Cons
+     - cannot conclusively declare safety
+     - errors may lie deep in subroutine calls
+     - slower execution
+
+** Utility of Gradual Typing
+   - Gradual typing allows for type checks at compile-time for type errors in some parts of a program, directed by type annotations.
+   - Since it is tough to declare that static typing is universally better or worse than dynamic typing, gradual typing offers the programmer a choice, without requiring a change in language
+
+** Attempt with Subtyping
+** Type Consistency
+* $\lambda_{\rightarrow}^?$
+** Syntax
+** Typing Rules
+** Relation to simply-typed \lambda-calculus
+** Run-time Semantics
+* $\lambda_{\rightarrow}^{\langle\tau\rangle}$
+** First-order example
+** Higher-order example
+* Implementation
+** Existing Implementations
+** MIT/GNU Scheme Implementation
+   
