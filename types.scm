@@ -19,12 +19,18 @@
       `(,(symbol-append '-> arity) ,s ,t)))
 
 (define (arrow-type? type)
-  (and (pair? type) (substring? "->" (symbol->string (car type)))))
+  (and (pair? type) (symbol? (car type)) (substring? "->" (symbol->string (car type)))))
+
+;; (define (domain arrow-type)
+;;   (if (any-type? arrow-type)
+;;       'any
+;;       (cadr arrow-type)))
 
 (define (domain arrow-type)
-  (if (any-type? arrow-type)
-      'any
-      (cadr arrow-type)))
+  (cond ((any-type? arrow-type) 'any)
+	((eq? (arity arrow-type) 'n) (cadr arrow-type))
+	((= (arity arrow-type) 1) (cadr arrow-type))
+	(else (cadr (nary->pair arrow-type)))))
 
 (define (co-domain arrow-type)
   (if (any-type? arrow-type)
@@ -61,7 +67,7 @@
 	(if (or (eq? ar 'n) (= 1 ar))
 	    arrow-type
 	    (make-arrow-type
-	     `(* ,@(repeat (domain arrow-type) ar))
+	     `(* ,@(repeat (cadr arrow-type) ar))
 	     (co-domain arrow-type))))
       arrow-type))
 
@@ -82,6 +88,12 @@
 
 (define (list-type? type)
   (and (pair? type) (eq? 'list (car type))))
+
+(define (base-type? val)
+  (or (number? val)
+      (string? val)
+      (char? val)
+      (boolean? val)))
 
 (define predefined-types
   '((+ . (->n number number))
@@ -106,9 +118,23 @@
 	(cdr type)
 	'any)))
 
+;; (define (~ s t)
+;;   (cond ((or (any-type? s) (any-type? t)))
+;; 	((equal? s t))
+;; 	((and (pair? s) (pair? t))
+;; 	 (and (~ (car s) (car t))
+;; 	      (~ (cdr s) (cdr t))))
+;; 	(else #f)))
+
+;; ~ : any type and pair type are not consistent. This is done
+;;     to deal with functions of multiple arity
 (define (~ s t)
-  (cond ((or (any-type? s) (any-type? t)))
+  (cond ((any-type? s) (not (pair-type? t)))
+	((any-type? t) (not (pair-type? s)))
 	((equal? s t))
+	((and (arrow-type? s) (arrow-type? t))
+	 (and (~ (car (nary->pair s)) (car (nary->pair t)))
+	      (~ (cdr (nary->pair s)) (cdr (nary->pair t)))))
 	((and (pair? s) (pair? t))
 	 (and (~ (car s) (car t))
 	      (~ (cdr s) (cdr t))))
@@ -119,10 +145,10 @@
 ;;       (cons (cons var type) te)
 ;;       te))
 
-(define (te/extend te var type)
-  (cons (cons var type) te))
+;; (define (te/extend te var type)
+;;   (cons (cons var type) te))
 
-(define (te/lookup te var)
-  (let ((type (assoc var te)))
-    (if type (cdr type) #f)))
+;; (define (te/lookup te var)
+;;   (let ((type (assoc var te)))
+;;     (if type (cdr type) #f)))
 
