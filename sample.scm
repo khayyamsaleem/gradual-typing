@@ -18,3 +18,6 @@
 	#f))
 
 (lambda (x) x)
+
+(let ((x 3))
+  ((lambda (x) (+ x 3)) x))

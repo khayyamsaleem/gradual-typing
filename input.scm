@@ -18,6 +18,7 @@
       #t
       (pmatch
        expr
+       ((let ,body . ,rest) #f)
        ((lambda (,v . ,vs) ,body) #f)
        ((if ,p ,t ,s) #f)
        ((fn (: ,v ,t) . ,body) #t)

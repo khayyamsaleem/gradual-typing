@@ -28,6 +28,14 @@
     ((_ (: type) . items)
      (quote items))))
 
+(define-syntax defvar
+  (syntax-rules (:)
+    ((_ (: name type) val)
+     (environment-define (the-environment) 'name val))))
+
+(define-syntax defn
+  (syntax-rules (:)
+    (error "Not implemented yet")))
 
 #|
 	REPL specific
