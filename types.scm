@@ -107,7 +107,12 @@
     (<= . (->n number boolean))
     (eq? . (->2 any boolean))
     (eqv? . (->2 any boolean))
-    (equal? . (->2 any boolean))))
+    (equal? . (->2 any boolean))
+    (null? . (-> (list any) boolean))
+    (cons . (-> (* any (list any)) (list any)))
+    (car . (-> (list any) any))
+    (cdr . (-> (list any) (list any)))
+    (map . (-> (* (-> any any) (list any)) (list any)))))
 
 (define (predefined? type)
   (assoc type predefined-types))
@@ -151,4 +156,3 @@
 ;; (define (te/lookup te var)
 ;;   (let ((type (assoc var te)))
 ;;     (if type (cdr type) #f)))
-

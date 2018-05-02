@@ -25,9 +25,23 @@
 
 (define-syntax listof
   (syntax-rules (:)
-    ((_ (: type) . items)
-     (quote items))))
+    ((_ (: type) e1 ...)
+     (list e1 ...))))
 
+(define-syntax pair
+  (syntax-rules ()
+    ((_ e1 e2)
+     (cons e1 e2))))
+
+(define-syntax defvar
+  (syntax-rules (:)
+    ((_ (: name type) val)
+     (define name val))))
+
+(define-syntax defn
+  (syntax-rules (:)
+    ((_ (: name type) (arg1 . args) body ...)
+     (define (name arg1 . args) body ...))))
 
 #|
 	REPL specific
