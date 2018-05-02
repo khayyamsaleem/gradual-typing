@@ -66,6 +66,11 @@
 ** Utility of Gradual Typing
    - Gradual typing allows for type checks at compile-time for type errors in some parts of a program, directed by type annotations.
    - Since it is tough to declare that static typing is universally better or worse than dynamic typing, gradual typing offers the programmer a choice, without requiring a change in language
+   - Provides a type system that:
+     - allows programmers to choose the degree to which they want to annotate a program
+     - allows programmers to use type annotations for static type checking as well as improving run-time performance
+     - accepts programs written in a dynamically typed style 
+     - on completely annotated programs, behaves just like a static type system
 
 ** Type Consistency
    | (CREFL) | $\tau \sim  \tau$                                                                                          |   |   | (CUNR) | $\tau \sim \thinspace ?$ |
@@ -78,10 +83,25 @@
 ** Typing Rules
    [[./images/typing_rules.png]]
 ** Relation to simply-typed \lambda-calculus
+
+   *Theorem:* If e \in $\lambda_\rightarrow$ then \emptyset \vdash_G e : \tau \equiv \emptyset \vdash_\rightarrow e : \tau
+   ||
+   ||
+   ||
+   Proof
 ** Run-time Semantics
+   - Requires a cast insertion translation from $\lambda_\rightarrow^?$ to an intermediate language
+   - 
 * $\lambda_{\rightarrow}^{\langle\tau\rangle}$
 ** First-order example
 ** Higher-order example
+** Type Safety
+   $\lambda_\rightarrow^?$ is *type safe*; if evaluation terminates, the result is either a value of an expected type or a cast error, but not a type error.
+   | |
+
+   | *Theorem:* | If e \in \lambda_\rightarrow^{?} with type \tau can be converted to e' \in \lambda_\rightarrow^{\langle?\rangle  |
+   |            | with type \tau, then it will evaluate to result \textbf{r}, |
+   |            | \textbf{r} a value, CastError, or KillError.             |
 * Implementation
 ** Existing Implementations
 ** MIT/GNU Scheme Implementation
