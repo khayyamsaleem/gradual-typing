@@ -1,9 +1,11 @@
+(load "pmatch.scm")
+(load "types.scm")
 (load "synext.scm")
 
 (define (square x)
   (* x x))
 
-(defvar (: t (list number))
+(defvar (: t1 (list number))
   (listof (: number) 1 2 3 4 5))
 
 (defn (: range (-> (* number number) (list number))) (x y)
@@ -28,6 +30,3 @@
       (cons (car x) (tappend (cdr x) y))))
 
 (define s (tappend '(1 2 3 4) '(4 5 6 6)))
-
-
-

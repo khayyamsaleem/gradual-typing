@@ -135,7 +135,8 @@
 	 (let* ((items-tf (map (lambda (e) (transform e te)) items))
 		(items-types (map (lambda (e) (cj/type e)) items-tf))
 		(items-cast (map (lambda (e) (cj/exp e)) items-tf)))
-	   (if (and (~ type (car items-types)) (all-equal? items-types))
+	   (if ;; (and (~ type (car items-types)) (all-equal? items-types))
+	    (~ type (car items-types))
 	       (let* ( ;; (new-te (te/nmerge (map (lambda (e) (te/extend (cj/te e)
 		      ;; 						(uncast (cj/exp e))
 		      ;; 						type)) items-tf)))
@@ -143,7 +144,7 @@
 		      (cast-items (map (lambda (e) (make-cast (uncast e) type)) items-cast))
 		      (cast-exp (make-cast `(listof (: ,type) ,@cast-items) (make-list-type type))))
 		 (make-cj (te/merge new-te te) cast-exp (make-list-type type)))
-	       (error "TypeError: " 'list 'elements 'should 'be 'of 'exact 'same 'type)))))
+	       (error "TypeError: " 'list 'elements 'should 'type 'consistent)))))
 
     ((defvar (: ,var ,type) ,val)
      (let ((val-tf (transform val te)))
@@ -163,7 +164,7 @@
 		    (cast-exp (make-cast `(if ,(cj/exp pred-tf) ,(cj/exp clause1-tf) ,(cj/exp clause2-tf))
 					 (cj/type clause1-tf))))
 		(make-cj (te/merge new-te te) cast-exp (cj/type clause1-tf)))
-	      (error "TypeError: " 'if 'branches 'should 'have 'same 'type '- 'got
+	      (error "TypeError: " 'if 'branches 'should 'have 'consistent 'type '- 'got
 		     (cj/type clause1-tf) 'and (cj/type clause2-tf))))
 	   (error "TypeError: " pred 'should 'be 'a 'boolean '- 'got (cj/type pred-tf)))))
 
@@ -195,7 +196,7 @@
 				      `(-> ,type ,ret-type))))
 	     (make-cj (te/merge (te/remove new-te v) te) cast-exp
 		      `(-> ,type ,ret-type)))
-	   (error "TypeError : " 'expected ret-type 'got co-domain-type))))
+	   (error "TypeError : " 'expected ret-type 'got co-domain-type 'for body))))
    
     ((fn ((: ,v ,type) . ,res) ,body)
      (let* ((bindings (map (lambda (x) (cons (cast/exp x) (cast/type x))) res))
@@ -214,7 +215,7 @@
     ((defn (: ,name ,type) (,arg1 . ,args) ,body)
      (display "DEFN") (newline)
      (if (not (arrow-type? type))
-	 (error "TypeError: " name 'should 'have 'a 'function 'type)
+	 (error "TypeError: " name 'should 'be 'a 'function 'type)
 	 (if (pair-type? (domain type))
 	     (if (not (equal? (pair-arity (domain type)) (length `(,arg1 ,@args))))
 		 (error "TypeError: " 'expected (pair-arity (domain type)) 'arguments
@@ -284,6 +285,7 @@
 					      (co-domain rator-type))))
 		     (make-cj new-te cast-exp (co-domain rator-type)))
 		   (if (and  (~ (domain rator-type) rand-type) (not (any-type? rand-type)))
+		    ;; (~ (domain rator-type) rand-type)
 		       (let ((new-te (te/merge (cj/te rator-tf)
 					       (cj/te rand-tf)
 					       ;; (te/extend (cj/te rand-tf)
@@ -294,7 +296,8 @@
 								   (domain rator-type)))
 						  (co-domain rator-type))))
 			 (make-cj new-te cast-exp (co-domain rator-type)))
-		       (error "TypeError : " 'expected (domain rator-type) 'got rand-type)))
+		       (error "TypeError : " 'expected (domain rator-type) 'got rand-type
+			      'for rand)))
 	       (error "TypeError : " rator 'must 'be 'a 'function)))))
     
     ((,rator . ,rands)
@@ -385,7 +388,7 @@
 	     (if (~ binding type)
 		 ;; (make-tj (te/extend te e type) exp binding)
 		 (make-tj te exp binding)
-		 (error "TypeError: " 'expected binding 'got type))
+		 (error "TypeError: " 'expected binding 'got type 'for e))
 	     ;; The part below never actually runs (?) need to test a bit more. 
 	     (begin (display "Adding to TE: ") (display e) (display " : ") (display t) (newline)
 		    (make-tj (te/extend e t) exp t)))))
@@ -436,12 +439,14 @@
        (let ((tc-body (tc body (co-domain type) (te/extend (te/copy te) v s))))
 	 (if (~ (tj/type tc-body) (co-domain type))
 	     (make-tj (te/remove (tj/te tc-body) v) exp t)
-	     (error "TypeError: " 'expected (co-domain type) 'got (tj/type tc-body)))))
+	     (error "TypeError: " 'expected (co-domain type) 'got (tj/type tc-body)
+		    'for body))))
       ((: (fn (: ,v ,s) (: ,ret) ,body) ,t)
        (let ((tc-body (tc body (co-domain type) (te/extend (te/copy te) v s))))
 	 (if (~ (tj/type tc-body) ret)
 	     (make-tj (te/remove (tj/te tc-body) v) exp t)
-	     (error "TypeError: " 'expected (co-domain type) 'got (tj/type tc-body)))))
+	     (error "TypeError: " 'expected (co-domain type) 'got (tj/type tc-body)
+		    'for body))))
       ((: (,rator ,rand) ,t)
        (let* ( ;; (tc-rator (tc rator `(-> ,(cast/type rand) ,type) te))
 	      (tc-rator (tc rator (cast/type rator) te))

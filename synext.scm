@@ -54,6 +54,3 @@
      (begin
        (display '(fn . args)) (newline)
        (apply fn (quote args))))))
-
-
-

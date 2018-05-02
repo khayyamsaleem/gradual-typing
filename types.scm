@@ -108,6 +108,7 @@
     (eq? . (->2 any boolean))
     (eqv? . (->2 any boolean))
     (equal? . (->2 any boolean))
+    (assoc . (-> (* any (list (pair any any))) (list (pair any any))))
     (null? . (-> (list any) boolean))
     (cons . (-> (* any (list any)) (list any)))
     (car . (-> (list any) any))
@@ -123,6 +124,16 @@
 	(cdr type)
 	'any)))
 
+(define *alias-list* '())
+
+(define (type-alias name type)
+  (set! *alias-list* (cons (cons name type) *alias-list*)))
+
+(define (get-alias name)
+  (if (assoc name *alias-list*)
+      (cdr (assoc name *alias-list*))
+      'no-type))
+
 ;; (define (~ s t)
 ;;   (cond ((or (any-type? s) (any-type? t)))
 ;; 	((equal? s t))
@@ -137,6 +148,7 @@
   (cond ((any-type? s) (not (pair-type? t)))
 	((any-type? t) (not (pair-type? s)))
 	((equal? s t))
+	((or (equal? s (get-alias t)) (equal? t (get-alias s))))
 	((and (arrow-type? s) (arrow-type? t))
 	 (and (~ (car (nary->pair s)) (car (nary->pair t)))
 	      (~ (cdr (nary->pair s)) (cdr (nary->pair t)))))

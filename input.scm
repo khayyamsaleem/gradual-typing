@@ -64,4 +64,3 @@
 		       (newline)
 		       (loop (+ n 1) (read in) (te/merge (tj/te tc) te)))))))))
 
-
