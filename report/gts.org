@@ -67,11 +67,16 @@
    - Gradual typing allows for type checks at compile-time for type errors in some parts of a program, directed by type annotations.
    - Since it is tough to declare that static typing is universally better or worse than dynamic typing, gradual typing offers the programmer a choice, without requiring a change in language
 
-** Attempt with Subtyping
 ** Type Consistency
+   | (CREFL) | $\tau \sim  \tau$                                                                                          |   |   | (CUNR) | $\tau \sim \thinspace ?$ |
+   |         |                                                                                                   |   |   |        |                    |
+   |         |                                                                                                   |   |   |        |                    |
+   | (CFUN)  | $\frac{\sigma_1 \sim \tau_1  \quad    \sigma_2 \sim \tau_2}{\sigma_1 \rightarrow \sigma_2 \thinspace \thinspace \sim \thinspace \thinspace \tau_1 \rightarrow \tau_2}$ |   |   | (CUNL) | $? \thinspace \sim \tau$ |
 * $\lambda_{\rightarrow}^?$
 ** Syntax
+   [[./images/syntax.png]]
 ** Typing Rules
+   [[./images/typing_rules.png]]
 ** Relation to simply-typed \lambda-calculus
 ** Run-time Semantics
 * $\lambda_{\rightarrow}^{\langle\tau\rangle}$
