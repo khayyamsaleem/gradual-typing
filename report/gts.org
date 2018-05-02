@@ -7,6 +7,10 @@
 #+latex_header: \AtBeginSection[]{\begin{frame}<beamer>\frametitle{Topic}\tableofcontents[currentsection]\end{frame}}
 #+BEAMER_HEADER: \institute[CS810]{CS810 -- Type Systems for Programming Languages}
 #+COLUMNS: %40ITEM %10BEAMER_env(Env) %9BEAMER_envargs(Env Args) %4BEAMER_col(Col) %10BEAMER_extra(Extra)
+#+LATEX_HEADER: \usepackage{syntax}
+#+LATEX_HEADER: \usepackage{amsmath}
+#+LATEX_HEADER: \setlength{\grammarparsep}{20pt plus 1pt minus 1pt}
+#+LATEX_HEADER: \setlength{\grammarindent}{12em}
 #+AUTHOR: Ramana Nagasamudram, Khayyam Saleem
 
 
@@ -71,7 +75,10 @@
      - allows programmers to use type annotations for static type checking as well as improving run-time performance
      - accepts programs written in a dynamically typed style 
      - on completely annotated programs, behaves just like a static type system
-
+** Attempt with Subtyping
+   - Prior attempts at integrating static and dynamic typing tried to make the dynamic type be both the top and bottom of the subtype hierarchy.
+   - However, because subtyping is transitive, that results in every type becoming related to every other type, and so subtyping would no longer rule out any static type errors
+   - The addition of a second phase of plausibility checking to the type system did not completely solve this problem
 ** Type Consistency
    | (CREFL) | $\tau \sim  \tau$                                                                                          |   |   | (CUNR) | $\tau \sim \thinspace ?$ |
    |         |                                                                                                   |   |   |        |                    |
@@ -82,6 +89,17 @@
    [[./images/syntax.png]]
 ** Typing Rules
    [[./images/typing_rules.png]]
+** Run-time Semantics
+   - Requires a cast insertion translation from $\lambda_\rightarrow^?$ to an intermediate language
+   - Reason is that the type-checker requires each typable object to be "tagged" with its type to verify consistency
+* $\lambda_{\rightarrow}^{\langle\tau\rangle}$
+** Syntax
+   #+ATTR_LATEX: :width 7.0cm
+   [[./images/IL_syntax.png]]
+** Operational Semantics
+   [[./images/IL_type_system.png]]
+** First-order example
+** Higher-order example
 ** Relation to simply-typed \lambda-calculus
 
    *Theorem:* If e \in $\lambda_\rightarrow$ then \emptyset \vdash_G e : \tau \equiv \emptyset \vdash_\rightarrow e : \tau
@@ -89,20 +107,147 @@
    ||
    ||
    Proof
-** Run-time Semantics
-   - Requires a cast insertion translation from $\lambda_\rightarrow^?$ to an intermediate language
-   - 
-* $\lambda_{\rightarrow}^{\langle\tau\rangle}$
-** First-order example
-** Higher-order example
 ** Type Safety
    $\lambda_\rightarrow^?$ is *type safe*; if evaluation terminates, the result is either a value of an expected type or a cast error, but not a type error.
    | |
 
-   | *Theorem:* | If e \in \lambda_\rightarrow^{?} with type \tau can be converted to e' \in \lambda_\rightarrow^{\langle?\rangle  |
+   | *Theorem:* | If e \in \lambda_\rightarrow^{?} with type \tau can be converted to e' \in \lambda_\rightarrow^{\langle?\rangle} |
    |            | with type \tau, then it will evaluate to result \textbf{r}, |
    |            | \textbf{r} a value, CastError, or KillError.             |
 * Implementation
-** Existing Implementations
+** Requirements
+1) Terms
+2) Types
+3) Typing Rules
+4) Operational Semantics
+** General Workflow
+    #+BEGIN_SRC dot :file diag.png
+    digraph g {
+          graph [autosize=true, resolution=100];
+          node [margin=0.2 fontsize=60 shape=rect];
+          forcelabels=true;
+          rankdir=LR;
+          File [label=<FILE<BR /><FONT POINT-SIZE="50">contains code written<BR />with new syntax</FONT>>];
+          Parser [label=<PARSER<BR /><FONT POINT-SIZE="50">supports extended syntax<BR />(with annotations)</FONT>>];
+          TC [label=<TYPE<BR />CHECKER>];
+          TS [label=<TYPE<BR />SYSTEM<BR /><FONT POINT-SIZE="50">extended with type<BR />"Dynamic" (?)</FONT>>];
+          E [label=<ERASURE<BR /><FONT POINT-SIZE="50">removes new syntax, <BR />reduces back to original language</FONT>>];
+          IL [label=<INTERMEDIATE<BR />LANGUAGE<BR /><FONT POINT-SIZE="50">adds cast tags to<BR />each typable object</FONT>>];
+          File -> Parser;
+          Parser -> TC;
+          E -> I;
+          I [label=<INTERPRETER<BR /><FONT POINT-SIZE="50">language's original<BR />interpreter</FONT>>];
+          TC -> {TS, E, IL};
+    }
+
+    #+END_SRC
+
+    #+ATTR_LATEX: :width 11cm
+    #+RESULTS:
+    [[file:diag.png]]
+
+** Implementation -- Grammar
+
+#+ATTR_LATEX: align=|l|c|l|
+| $\synt{ground-type}$ | ::= | =number= | $\textbar$ | =boolean= | $\textbar$ | =char= | $\textbar$ | =string= |
+
+#+ATTR_LATEX: align=|l|c|l|
+| $\synt{type}$ | ::=        | =any=                                       |
+|               | $\textbar$ | $\synt{ground-type}$                        |
+|               | $\textbar$ | $(* \synt{type} \synt{type} \dots \synt{type})$ |
+|               | $\textbar$ | $\text{list} \synt{type}$                   |
+|               | $\textbar$ | $\rightarrow \; \synt{type} \synt{type}$              |
+|               | $\textbar$ | $\rightarrow n \; \synt{type} \synt{type}$            |
+
+** Implementation -- Grammar
+
+#+ATTR_LATEX: align=|l|c|l|
+| $\synt{expression}$ | ::=        | \dots                                                                                        |
+|                     | $\textbar$ | $(\mathtt{fn} \;(: \synt{variable} \synt{type}) \synt{expression})$                      |
+|                     | $\textbar$ | $(\mathtt{fn} \;(: \synt{variable} \synt{type}) \;(: \synt{type}) \synt{expression})$    |
+|                     | $\textbar$ | $(\mathtt{listof} \;(:\synt{type}) \synt{expression}*)$                                  |
+|                     | $\textbar$ | $(\mathtt{pair} \synt{expression} \synt{expression})$                                    |
+|                     | $\textbar$ | $(\mathtt{defvar} \;(: \synt{variable} \synt{type}) \synt{expression})$                  |
+|                     | $\textbar$ | $(\mathtt{defn} \;(: \synt{variable} \synt{type}) (\synt{variable}*) \synt{expression})$ |
+
+
+** Implementation -- Opeartional Semantics
+
+- Scheme's operational semantics
+- Macros enable type annotations
+- Each macro simply performs erasure on 'itself'
+
+** Implementation -- Operational Semantics
+
+$$\frac{}{\texttt{(fn (: x s) M)} \rightarrow \texttt{(lambda (x) M)}}$$
+
+$$\frac{}{\texttt{(listof (: s) m n ...)} \rightarrow \texttt{(list m n ...)}}$$
+
+$$\frac{}{\texttt{(defvar (: x s) M)} \rightarrow \texttt{(define (x) M)}}$$
+
+$$\frac{}{\texttt{(pair x y)} \rightarrow \texttt{(cons x y)}}$$
+
+$$\frac{}{\texttt{(defn (: f s) (x y ...) M)} \rightarrow \texttt{(define (f x y ...) M)}}$$
+
+** Implementation -- Operational Semantics
+
+#+BEGIN_SRC scheme
+(define-syntax listof
+  (syntax-rules (:)
+    ((_ (: type) e1 ...)
+     (list e1 ...))))
+#+END_SRC
+
+** Implementation -- Operational Semantics
+
+#+BEGIN_SRC scheme
+(define-syntax fn-erase
+  (syntax-rules (:)
+    ((_ (: v type))
+     '(v))
+    ((_ ((: v type) v2 ...))
+     `(v ,@(fn-erase v2 ...)))))
+#+END_SRC
+
+** Implementation -- Operational Semantics
+
+#+BEGIN_SRC scheme
+(define-syntax fn
+  (syntax-rules (:)
+    ((_ (: v type) (: return) body ...)
+     (lambda (v) body ...))
+    ((_ (: v type) body ...)
+     (lambda (v) body ...))
+    ((_ ((: v type) v2 ...) (: return) body ...)
+     (fn ((: v type) v2 ...) body ...))
+    ((_ ((: v type) v2 ...) body ...)
+     (let ((env (the-environment)))
+       (eval `(lambda ,O(fn-erase ((: v type) v2 ...)) 
+		body ...) env)))
+    ((_ () body ...)
+     (lambda () body ...))))
+#+END_SRC
+
+** Implementation -- Operational Semantics
+
+#+BEGIN_SRC scheme
+(define-syntax defn
+  (syntax-rules (:)
+    ((_ (: name type) (arg1 . args) body ...)
+     (define (name arg1 . args) body ...))))
+#+END_SRC
+
+** Implementation -- Typing Rules
+
+
+** Implementation -- Typing Rules
+
+$$\frac{\Gamma \vdash M : \sigma \rightarrow \tau \quad \Gamma \vdash N : \tau \quad \sigma \sim \tau \quad \tau \neq \thinspace ? \text{ when } \sigma = \thinspace ?}{\Gamma \vdash M \; N : \tau}$$
+
+- Design decision we had to make
+- Otherwise =((fn (: x any) (+ x 1)) #t)= would type check
+- In /Gradual Typing for Functional Languages/ this results in a /CastError/ which is addressed
+in the operational semantics
+
 ** MIT/GNU Scheme Implementation
    
