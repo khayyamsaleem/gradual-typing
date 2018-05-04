@@ -6,73 +6,6 @@
 #+LATEX_CLASS: beamer
 #+BEAMER_FRAME_LEVEL: 2
 
-* Implementation
-
-1) Terms
-2) Types
-3) Typing Rules
-4) Operational Semantics
-
-
-* Implementation -- Terms
-:PROPERTIES:
-:BEAMER_OPT: fragile,allowframebreaks
-:END:
-
-#+BEGIN_LaTeX
-\begin{grammar}
-<statement> ::= <ident> = <expr>
-\alt for <ident> = <expr> to <expr> do <statement>
-\alt { <stat-list> }
-\end{grammar}
-#+END_LaTeX
-
-
-* Implementation
-:PROPERTIES:
-:BEAMER_OPT: fragile
-:END:
-
-#+BEGIN_LaTeX
-\begin{grammar}
-\sigma,\tau ::= \mathbb{N}
-\alt \mathbb{B}
-\alt \mathbb{S}
-\alt \mathbb{C}
-\alt {list}_{\sigma}
-\alt (\sigma_1 * \sigma_2 * \dots * \sigma_n)
-\alt \sigma \rightarrow \tau
-\alt \sigma \underset{n}{\rightarrow} \tau
-\end{grammar}
-#+END_LaTeX
-
-* Implementation
-
-#+BEGIN_LaTeX
-\begin{tabular}{lcl}
-\synt{term} & ::= & \synt{term1}\\
-& \textbar & \synt{term2}\\
-\end{tabular}
-#+END_LaTeX
-
-#+ATTR_LATEX: align=|l|c|l|
-| $\synt{term}$ | ::=        | $\synt{term1}$ |
-|               | $\textbar$ | $\synt{term2}$ |
-
-
-* Implementation -- Grammar
-
-#+ATTR_LATEX: align=|l|c|l|
-| $\gamma$ | ::= | $\mathbb{N}$ | $\mathbb{B}$ | $\mathbb{C}$ | $\mathbb{S}$ |
-
-#+ATTR_LATEX: align=|l|c|l|
-| $\sigma$ | ::=        | ?                     |
-|     | $\textbar$ | $\gamma$                   |
-|     | $\textbar$ | $(\sigma_1 * \sigma_2 * \dots * \sigma_n)$  |
-|     | $\textbar$ | $\text{list} \sigma$       |
-|     | $\textbar$ | $\sigma \rightarrow \tau$               |
-|     | $\textbar$ | $\sigma \underset{n}{\rightarrow} \tau$ |
-
 * Implementation -- Grammar
 
 #+ATTR_LATEX: align=|l|c|l|
@@ -166,14 +99,53 @@ $$\frac{}{\texttt{(defn (: f s) (x y ...) M)} \rightarrow \texttt{(define (f x y
 
 * Implementation -- Typing Rules
 
+** 
+$$\frac{\Gamma, x : \sigma \vdash M : \tau}{\Gamma \vdash \lambda x : \sigma . M : \sigma \rightarrow \tau}$$
 
 * Implementation -- Typing Rules
 
-$$\frac{\Gamma \vdash M : \sigma \rightarrow \tau \quad \Gamma \vdash N : \tau \quad \sigma \sim \tau \quad \tau \neq \thinspace ? \text{ when } \sigma = \thinspace ?}{\Gamma \vdash M \; N : \tau}$$
+$$\frac{\Gamma \vdash M : \sigma \rightarrow \tau \quad \Gamma \vdash N : \tau \quad \sigma \sim \tau \quad \tau \neq \thinspace ? \text{ when } \sigma \neq \thinspace ?}{\Gamma \vdash M \; N : \tau}$$
 
 - Design decision we had to make
 - Otherwise =((fn (: x any) (+ x 1)) #t)= would type check
-- In /Gradual Typing for Functional Languages/ this results in a /CastError/ which is addressed
-in the operational semantics
+- In /Gradual Typing for Functional Languages/ this results in a /CastError/ which is addressed by the operational semantics
+- We don't have control over Scheme's operational semantics in our case
+
+
+* Implementation -- Typing Rules
+
+** 
+
+$$\frac{\Gamma \vdash M : \sigma_1 * \sigma_2 * \dots * \sigma_n \rightarrow \tau \qquad \Gamma \vdash N_{i}^{i \in \{1,2,\dots,n\} } : \sigma_i}{\Gamma \vdash (M \, N_1 \, N_2 \dots \, N_n) : \tau}$$
+
+** 
+
+$$\frac{\Gamma \vdash M : \sigma \underset{n}{\rightarrow} \tau \qquad \Gamma \vdash N_{i}^{i \in \{1,2,\dots,n\} } : \sigma}{\Gamma \vdash (M \, N_1 \, N_2 \dots \, N_n) : \tau}$$
+
+** 
+- $\underset{n}{\rightarrow}$ is not entirely syntactic sugar
+- Helps deal with Scheme's multiple arity functions
+
+* Scheme's multiple arity functions
+
+#+BEGIN_SRC scheme
+(+)         ; => 0
+(+ 1)       ; => 1
+(+ 1 2 3 4) ; => 10
+
+(*)         ; => 1
+(* 1)       ; => 1
+(* 1 2 3 4) ; => 24
+
+(>)         ; => #t
+(> 1)       ; => #t
+(> 1 2)     ; => #f
+(> 3 2 1 0) ; => #t 
+
+
+(: + (->n number number))
+(: * (->n number number))
+(: > (->n number boolean))
+#+END_SRC
 
 
