@@ -31,7 +31,7 @@
 |                     | $\textbar$ | $(\mathtt{defn} \;(: \synt{variable} \synt{type}) (\synt{variable}*) \synt{expression})$ |
 
 
-* Implementation -- Opeartional Semantics
+* Implementation -- Operational Semantics
 
 - Scheme's operational semantics
 - Macros enable type annotations
