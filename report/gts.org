@@ -1,4 +1,5 @@
 #+STARTUP: noindent showall beamer
+#+LATEX_HEADER: \usepackage{amsmath}\usepackage[nounderscore]{syntax}
 #+TITLE: Gradual Typing
 #+OPTIONS: toc:t H:2 date:nil
 #+BEAMER_FRAME_LEVEL: 2
@@ -7,10 +8,6 @@
 #+latex_header: \AtBeginSection[]{\begin{frame}<beamer>\frametitle{Topic}\tableofcontents[currentsection]\end{frame}}
 #+BEAMER_HEADER: \institute[CS810]{CS810 -- Type Systems for Programming Languages}
 #+COLUMNS: %40ITEM %10BEAMER_env(Env) %9BEAMER_envargs(Env Args) %4BEAMER_col(Col) %10BEAMER_extra(Extra)
-#+LATEX_HEADER: \usepackage{syntax}
-#+LATEX_HEADER: \usepackage{amsmath}
-#+LATEX_HEADER: \setlength{\grammarparsep}{20pt plus 1pt minus 1pt}
-#+LATEX_HEADER: \setlength{\grammarindent}{12em}
 #+AUTHOR: Ramana Nagasamudram, Khayyam Saleem
 
 
@@ -75,6 +72,7 @@
      - allows programmers to use type annotations for static type checking as well as improving run-time performance
      - accepts programs written in a dynamically typed style 
      - on completely annotated programs, behaves just like a static type system
+       
 ** Attempt with Subtyping
    - Prior attempts at integrating static and dynamic typing tried to make the dynamic type be both the top and bottom of the subtype hierarchy.
    - However, because subtyping is transitive, that results in every type becoming related to every other type, and so subtyping would no longer rule out any static type errors
@@ -96,7 +94,7 @@
 ** Syntax
    #+ATTR_LATEX: :width 7.0cm
    [[./images/IL_syntax.png]]
-** Operational Semantics
+** Typing Rules
    [[./images/IL_type_system.png]]
 ** First-order example
 ** Higher-order example
@@ -109,11 +107,10 @@
    Proof
 ** Type Safety
    $\lambda_\rightarrow^?$ is *type safe*; if evaluation terminates, the result is either a value of an expected type or a cast error, but not a type error.
-   | |
-
+   |            |                                                                   |
    | *Theorem:* | If e \in \lambda_\rightarrow^{?} with type \tau can be converted to e' \in \lambda_\rightarrow^{\langle?\rangle} |
-   |            | with type \tau, then it will evaluate to result \textbf{r}, |
-   |            | \textbf{r} a value, CastError, or KillError.             |
+   |            | with type \tau, then it will evaluate to result \textbf{r},          |
+   |            | \textbf{r} a value, CastError, or KillError.                      |
 * Implementation
 ** Requirements
 1) Terms
@@ -121,30 +118,22 @@
 3) Typing Rules
 4) Operational Semantics
 ** General Workflow
-    #+BEGIN_SRC dot :file diag.png
-    digraph g {
-          graph [autosize=true, resolution=100];
-          node [margin=0.2 fontsize=60 shape=rect];
-          forcelabels=true;
-          rankdir=LR;
-          File [label=<FILE<BR /><FONT POINT-SIZE="50">contains code written<BR />with new syntax</FONT>>];
-          Parser [label=<PARSER<BR /><FONT POINT-SIZE="50">supports extended syntax<BR />(with annotations)</FONT>>];
-          TC [label=<TYPE<BR />CHECKER>];
-          TS [label=<TYPE<BR />SYSTEM<BR /><FONT POINT-SIZE="50">extended with type<BR />"Dynamic" (?)</FONT>>];
-          E [label=<ERASURE<BR /><FONT POINT-SIZE="50">removes new syntax, <BR />reduces back to original language</FONT>>];
-          IL [label=<INTERMEDIATE<BR />LANGUAGE<BR /><FONT POINT-SIZE="50">adds cast tags to<BR />each typable object</FONT>>];
-          File -> Parser;
-          Parser -> TC;
-          E -> I;
-          I [label=<INTERPRETER<BR /><FONT POINT-SIZE="50">language's original<BR />interpreter</FONT>>];
-          TC -> {TS, E, IL};
-    }
-
-    #+END_SRC
-
     #+ATTR_LATEX: :width 11cm
     #+RESULTS:
     [[file:diag.png]]
+
+** Implementation -- Grammar
+
+#+ATTR_LATEX: align=|l|c|l|
+| $\gamma$ | ::= | $\mathbb{N}$ | $\mathbb{B}$ | $\mathbb{C}$ | $\mathbb{S}$ |
+
+#+ATTR_LATEX: align=|l|c|l|
+| $\sigma$ | ::=        | ?                          |
+|     | $\textbar$ | $\gamma$                        |
+|     | $\textbar$ | $(\sigma_1 * \sigma_2 * \dots * \sigma_n)$       |
+|     | $\textbar$ | $\text{list} \thinspace \sigma$ |
+|     | $\textbar$ | $\sigma \rightarrow \tau$                    |
+|     | $\textbar$ | $\sigma \underset{n}{\rightarrow} \tau$      |
 
 ** Implementation -- Grammar
 
@@ -162,13 +151,13 @@
 ** Implementation -- Grammar
 
 #+ATTR_LATEX: align=|l|c|l|
-| $\synt{expression}$ | ::=        | \dots                                                                                        |
-|                     | $\textbar$ | $(\mathtt{fn} \;(: \synt{variable} \synt{type}) \synt{expression})$                      |
-|                     | $\textbar$ | $(\mathtt{fn} \;(: \synt{variable} \synt{type}) \;(: \synt{type}) \synt{expression})$    |
-|                     | $\textbar$ | $(\mathtt{listof} \;(:\synt{type}) \synt{expression}*)$                                  |
-|                     | $\textbar$ | $(\mathtt{pair} \synt{expression} \synt{expression})$                                    |
-|                     | $\textbar$ | $(\mathtt{defvar} \;(: \synt{variable} \synt{type}) \synt{expression})$                  |
-|                     | $\textbar$ | $(\mathtt{defn} \;(: \synt{variable} \synt{type}) (\synt{variable}*) \synt{expression})$ |
+| $\synt{expression}$ | ::= \quad ...                                                                                              |
+|                     | $\textbar$ \quad  $(\mathtt{fn} \;(: \synt{variable} \synt{type}) \synt{expression})$                      |
+|                     | $\textbar$ \quad  $(\mathtt{fn} \;(: \synt{variable} \synt{type}) \;(: \synt{type}) \synt{expression})$    |
+|                     | $\textbar$ \quad  $(\mathtt{listof} \;(:\synt{type}) \synt{expression}*)$                                  |
+|                     | $\textbar$ \quad  $(\mathtt{pair} \synt{expression} \synt{expression})$                                    |
+|                     | $\textbar$ \quad  $(\mathtt{defvar} \;(: \synt{variable} \synt{type}) \synt{expression})$                  |
+|                     | $\textbar$ \quad  $(\mathtt{defn} \;(: \synt{variable} \synt{type}) (\synt{variable}*) \synt{expression})$ |
 
 
 ** Implementation -- Opeartional Semantics
@@ -239,15 +228,12 @@ $$\frac{}{\texttt{(defn (: f s) (x y ...) M)} \rightarrow \texttt{(define (f x y
 
 ** Implementation -- Typing Rules
 
-
-** Implementation -- Typing Rules
-
 $$\frac{\Gamma \vdash M : \sigma \rightarrow \tau \quad \Gamma \vdash N : \tau \quad \sigma \sim \tau \quad \tau \neq \thinspace ? \text{ when } \sigma = \thinspace ?}{\Gamma \vdash M \; N : \tau}$$
 
 - Design decision we had to make
 - Otherwise =((fn (: x any) (+ x 1)) #t)= would type check
-- In /Gradual Typing for Functional Languages/ this results in a /CastError/ which is addressed
-in the operational semantics
+- In /Gradual Typing for Functional Languages/ this results in a /CastError/ which is addressed in the operational semantics
+
 
 ** MIT/GNU Scheme Implementation
    
