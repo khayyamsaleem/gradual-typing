@@ -228,12 +228,49 @@ $$\frac{}{\texttt{(defn (: f s) (x y ...) M)} \rightarrow \texttt{(define (f x y
 
 ** Implementation -- Typing Rules
 
-$$\frac{\Gamma \vdash M : \sigma \rightarrow \tau \quad \Gamma \vdash N : \tau \quad \sigma \sim \tau \quad \tau \neq \thinspace ? \text{ when } \sigma = \thinspace ?}{\Gamma \vdash M \; N : \tau}$$
+$$\frac{\Gamma \vdash M : \sigma \rightarrow \tau \quad \Gamma \vdash N : \sigma' \quad \sigma \sim \sigma' \quad \sigma' \neq \thinspace ? \text{ when } \sigma = \thinspace ?}{\Gamma \vdash M \; N : \tau}$$
 
 - Design decision we had to make
 - Otherwise =((fn (: x any) (+ x 1)) #t)= would type check
 - In /Gradual Typing for Functional Languages/ this results in a /CastError/ which is addressed in the operational semantics
+- We don't have control over Scheme's operational semantics in our case
+  
+
+** Implementation -- Typing Rules
+
+*** 
+
+$$\frac{\Gamma \vdash M : \sigma_1 * \sigma_2 * \dots * \sigma_n \rightarrow \tau \qquad \Gamma \vdash N_{i}^{i \in \{1,2,\dots,n\} } : \sigma_i}{\Gamma \vdash (M \, N_1 \, N_2 \dots \, N_n) : \tau}$$
+
+
+
+$$\frac{\Gamma \vdash M : \sigma \underset{n}{\rightarrow} \tau \qquad \Gamma \vdash N_{i}^{i \in \{1,2,\dots,n\} } : \sigma}{\Gamma \vdash (M \, N_1 \, N_2 \dots \, N_n) : \tau}$$
+
+
+- $\underset{n}{\rightarrow}$ is not entirely syntactic sugar
+- Helps deal with Scheme's multiple arity functions
+
+** Scheme's multiple arity functions
+
+#+BEGIN_SRC scheme
+(+)         ; => 0
+(+ 1)       ; => 1
+(+ 1 2 3 4) ; => 10
+
+(*)         ; => 1
+(* 1)       ; => 1
+(* 1 2 3 4) ; => 24
+
+(>)         ; => #t
+(> 1)       ; => #t
+(> 1 2)     ; => #f
+(> 3 2 1 0) ; => #t 
+
+(: + (->n number number))
+(: * (->n number number))
+(: > (->n number boolean))
+#+END_SRC
 
 
 ** MIT/GNU Scheme Implementation
-   
+ 
