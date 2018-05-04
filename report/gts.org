@@ -228,7 +228,7 @@ $$\frac{}{\texttt{(defn (: f s) (x y ...) M)} \rightarrow \texttt{(define (f x y
 
 ** Implementation -- Typing Rules
 
-$$\frac{\Gamma \vdash M : \sigma \rightarrow \tau \quad \Gamma \vdash N : \sigma' \quad \sigma \sim \sigma' \quad \sigma' \neq \thinspace ? \text{ when } \sigma = \thinspace ?}{\Gamma \vdash M \; N : \tau}$$
+$$\frac{\Gamma \vdash M : \sigma \rightarrow \tau \qquad \Gamma \vdash N : \sigma' \qquad \sigma \sim \sigma' \qquad \sigma' \neq \thinspace ? \text{ when } \sigma = \thinspace ?}{\Gamma \vdash M \; N : \tau}$$
 
 - Design decision we had to make
 - Otherwise =((fn (: x any) (+ x 1)) #t)= would type check
@@ -241,12 +241,9 @@ $$\frac{\Gamma \vdash M : \sigma \rightarrow \tau \quad \Gamma \vdash N : \sigma
 *** 
 
 $$\frac{\Gamma \vdash M : \sigma_1 * \sigma_2 * \dots * \sigma_n \rightarrow \tau \qquad \Gamma \vdash N_{i}^{i \in \{1,2,\dots,n\} } : \sigma_i}{\Gamma \vdash (M \, N_1 \, N_2 \dots \, N_n) : \tau}$$
-
-
-
+||
 $$\frac{\Gamma \vdash M : \sigma \underset{n}{\rightarrow} \tau \qquad \Gamma \vdash N_{i}^{i \in \{1,2,\dots,n\} } : \sigma}{\Gamma \vdash (M \, N_1 \, N_2 \dots \, N_n) : \tau}$$
-
-
+||
 - $\underset{n}{\rightarrow}$ is not entirely syntactic sugar
 - Helps deal with Scheme's multiple arity functions
 
