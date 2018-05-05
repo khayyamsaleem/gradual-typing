@@ -1,30 +1,16 @@
 (fn (: x number) x)
 
-(fn (: x number)
-    (if (> x 0)
-	#t
-	#f))
-
-(fn (: x number)
-    (listof (: number) x x (* x x)))
-
-(if (> x 0)				; shouldn't check this
-    #t
-    "false")
-
-(fn (: x number)
-    (if (> x 0)
-	#t
-	#f))
+(fn (: x number) (listof (: number) x x (* x x)))
 
 (defvar (: succ (-> number number)) (fn (: x number) (+ x 1)))
 
 ((fn (: x number) (succ x)) 3)
 
+((fn (: x any) (succ x)) #t)
+
 (succ 3)
 
-(define (square x)
-  (* x x))
+(define (square x) (* x x))
 
 (defvar (: t number) 10)
 
@@ -34,3 +20,4 @@
 
 (defn (: succ (-> number number)) (x)
   (+ x 1))
+

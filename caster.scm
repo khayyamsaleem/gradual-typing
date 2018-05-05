@@ -213,7 +213,8 @@
 		cast-exp (cast/type cast-exp))))
     
     ((defn (: ,name ,type) (,arg1 . ,args) ,body)
-     (display "DEFN") (newline)
+     ;; (display "DEFN")
+     ;; (newline)
      (if (not (arrow-type? type))
 	 (error "TypeError: " name 'should 'be 'a 'function 'type)
 	 (if (pair-type? (domain type))
@@ -223,15 +224,16 @@
 		 (let* ( ;; (bindings (map (lambda (x y) (cons (cdr (domain type))
 			;; 				       `(arg1 ,@args)))))
 			(new-te (te/nextend te `(,arg1 ,@args) (cdr (domain type))))
-			(throw
-			 (begin (display "*defn te: ") (display (te->alist new-te)) (newline) 3))
+			;; (throw
+			;;  (begin (display "*defn te: ") (display (te->alist new-te)) (newline) 3))
 			(body-tf (transform body (te/extend new-te name type)))
 			(cast-exp (make-cast `(defn (: ,name ,type) (,arg1 ,@args)
 						,(cj/exp body-tf)) 'unit))
-			(throw2
-			 (begin (display "CAST-EXP: ") (display cast-exp) (newline)
-				(display "BODY-TF-TYPE: ") (display (cj/type body-tf)) (newline)
-				(display "**************") (newline) 3)))
+			;; (throw2
+			;;  (begin (display "CAST-EXP: ") (display cast-exp) (newline)
+			;; 	(display "BODY-TF-TYPE: ") (display (cj/type body-tf)) (newline)
+			;; 	(display "**************") (newline) 3))
+			)
 		   (if (~ (cj/type body-tf) (co-domain type))
 		       (make-tj (te/merge (te/extend te name type) (te/nremove new-te `(,arg1 ,@args)))
 				cast-exp 'unit)
@@ -352,9 +354,10 @@
 			      (new-te (te/nmerge (append (list (cj/te rator-tf)) rc-te)))
 			      (cast-exp `(: (,(cj/exp rator-tf) ,@rc) ,(co-domain rator-type))))
 			 (make-cj new-te cast-exp (co-domain rator-type)))
-		       (begin (display rand-type)
-			      (newline)
-			      (display rator-type) (error "TypeError: " 'inconsistent 'argument 'types 'for rator))))
+		       (begin ;; (display rand-type)
+			      ;; (newline)
+			      ;; (display rator-type)
+			      (error "TypeError: " 'inconsistent 'argument 'types 'for rator))))
 	       (error "TypeError: " rator 'must 'be 'a 'function)))))
     (else (error "TRANSFORM -- Unknown type for --" exp))))
 
@@ -390,14 +393,14 @@
 		 (make-tj te exp binding)
 		 (error "TypeError: " 'expected binding 'got type 'for e))
 	     ;; The part below never actually runs (?) need to test a bit more. 
-	     (begin (display "Adding to TE: ") (display e) (display " : ") (display t) (newline)
-		    (make-tj (te/extend e t) exp t)))))
+	     (make-tj (te/extend e t) exp t))))
       ((: (defvar (: ,v ,s) ,val) ,t)
        (let* ((tc-val (tc val s te)))
 	 (if (~ (tj/type tc-val) s)
 	     (let ((new-te (te/merge (tj/te tc-val) (te/extend te v s))))
 	       (make-tj new-te exp t))
 	     (error "TypeError: " 'value 'type (tj/type tc-val) 'is 'not 'consistent 'with s))))
+
       ((: (pair ,x ,y) ,t)
        (let* ((tc-x (tc x (cadr t) te))
 	      (tc-y (tc y (caddr t) te))
@@ -421,7 +424,8 @@
 	      (new-te (te/nmerge (map (lambda (e) (tj/te e)) (list tc-pred tc-clause1 tc-clause2)))))
 	 (make-tj (te/merge te new-te) exp t)))
       ((: (defn (: ,v ,s) (,arg1 . ,args) ,body) ,t)
-       (display (length `(,arg1 ,@args))) (newline)
+       ;; (display (length `(,arg1 ,@args)))
+       ;; (newline)
        (if (pair-type? (domain s))
 	   (let* ((new-te (te/extend (te/nextend te `(,arg1 ,@args) (cdr (domain s))) v s))
 		  

@@ -64,3 +64,13 @@
 		       (newline)
 		       (loop (+ n 1) (read in) (te/merge (tj/te tc) te)))))))))
 
+(define (type-check filename)
+  (let ((in (open-input-file filename)))
+    (let loop ((n 0) (e (read in)) (te (system-type-environment)))
+      (if (eof-object? e)
+	  (list 'done n)
+	  (let ((tc (type-checker e te)))
+	    (if (equal? tc 'no-check)
+		(loop n (read in) te)
+		(loop (+ n 1) (read in) (te/merge (tj/te tc) te))))))))
+

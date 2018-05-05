@@ -2,9 +2,6 @@
 (load "types.scm")
 (load "synext.scm")
 
-(define (square x)
-  (* x x))
-
 (defvar (: t1 (list number))
   (listof (: number) 1 2 3 4 5))
 
@@ -15,7 +12,10 @@
 
 (defvar (: s (list number)) (range 1 10))
 
-(defvar (: s1 (list string)) (map (fn (: x number) (square x)) s))
+(defn (: double (-> number number)) (x)
+  (+ x x))
+
+(defvar (: s1 (list number)) (map (fn (: x string) (double x)) s))
 
 (defn (: fact (-> number number)) (x)
   (if (< x 1)

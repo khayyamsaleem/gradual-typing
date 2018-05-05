@@ -135,7 +135,7 @@
 |     | $\textbar$ | $\sigma \rightarrow \tau$                    |
 |     | $\textbar$ | $\sigma \underset{n}{\rightarrow} \tau$      |
 
-** Implementation -- Grammar
+** Implementation -- Grammar (Prefix syntax)
 
 #+ATTR_LATEX: align=|l|c|l|
 | $\synt{ground-type}$ | ::= | =number= | $\textbar$ | =boolean= | $\textbar$ | =char= | $\textbar$ | =string= |
@@ -160,7 +160,7 @@
 |                     | $\textbar$ \quad  $(\mathtt{defn} \;(: \synt{variable} \synt{type}) (\synt{variable}*) \synt{expression})$ |
 
 
-** Implementation -- Opeartional Semantics
+** Implementation -- Operational Semantics
 
 - Scheme's operational semantics
 - Macros enable type annotations
@@ -172,13 +172,13 @@ $$\frac{}{\texttt{(fn (: x s) M)} \rightarrow \texttt{(lambda (x) M)}}$$
 
 $$\frac{}{\texttt{(listof (: s) m n ...)} \rightarrow \texttt{(list m n ...)}}$$
 
-$$\frac{}{\texttt{(defvar (: x s) M)} \rightarrow \texttt{(define (x) M)}}$$
+$$\frac{}{\texttt{(defvar (: x s) M)} \rightarrow \texttt{(define x M)}}$$
 
 $$\frac{}{\texttt{(pair x y)} \rightarrow \texttt{(cons x y)}}$$
 
 $$\frac{}{\texttt{(defn (: f s) (x y ...) M)} \rightarrow \texttt{(define (f x y ...) M)}}$$
 
-** Implementation -- Operational Semantics
+** Implementation -- =listof= macro
 
 #+BEGIN_SRC scheme
 (define-syntax listof
@@ -187,7 +187,7 @@ $$\frac{}{\texttt{(defn (: f s) (x y ...) M)} \rightarrow \texttt{(define (f x y
      (list e1 ...))))
 #+END_SRC
 
-** Implementation -- Operational Semantics
+** Implementation -- =fn= macro (1/2)
 
 #+BEGIN_SRC scheme
 (define-syntax fn-erase
@@ -198,7 +198,7 @@ $$\frac{}{\texttt{(defn (: f s) (x y ...) M)} \rightarrow \texttt{(define (f x y
      `(v ,@(fn-erase v2 ...)))))
 #+END_SRC
 
-** Implementation -- Operational Semantics
+** Implementation -- =fn= macro (2/2)
 
 #+BEGIN_SRC scheme
 (define-syntax fn
@@ -211,13 +211,13 @@ $$\frac{}{\texttt{(defn (: f s) (x y ...) M)} \rightarrow \texttt{(define (f x y
      (fn ((: v type) v2 ...) body ...))
     ((_ ((: v type) v2 ...) body ...)
      (let ((env (the-environment)))
-       (eval `(lambda ,O(fn-erase ((: v type) v2 ...)) 
-		body ...) env)))
+       (eval '(lambda ,(fn-erase ((: v type)) v2 ...))
+	     body ...) env))
     ((_ () body ...)
      (lambda () body ...))))
 #+END_SRC
 
-** Implementation -- Operational Semantics
+** Implementation -- =defn= macro
 
 #+BEGIN_SRC scheme
 (define-syntax defn
@@ -226,17 +226,30 @@ $$\frac{}{\texttt{(defn (: f s) (x y ...) M)} \rightarrow \texttt{(define (f x y
      (define (name arg1 . args) body ...))))
 #+END_SRC
 
-** Implementation -- Typing Rules
+** Implementation -- Typing Rule -- Application
 
-$$\frac{\Gamma \vdash M : \sigma \rightarrow \tau \qquad \Gamma \vdash N : \sigma' \qquad \sigma \sim \sigma' \qquad \sigma' \neq \thinspace ? \text{ when } \sigma = \thinspace ?}{\Gamma \vdash M \; N : \tau}$$
+$$\frac{\Gamma \vdash M : \sigma \rightarrow \tau \qquad \Gamma \vdash N : \sigma' \qquad \sigma \sim \sigma' \qquad \sigma' \neq \thinspace ? \text{ when } \sigma \neq \thinspace ?}{\Gamma \vdash M \; N : \tau}$$
 
-- Design decision we had to make
+- Based on Typed Racket
 - Otherwise =((fn (: x any) (+ x 1)) #t)= would type check
 - In /Gradual Typing for Functional Languages/ this results in a /CastError/ which is addressed in the operational semantics
 - We don't have control over Scheme's operational semantics in our case
-  
+- If the function's domain type is not a =?= type, then the argument type cannot be =?=.
 
-** Implementation -- Typing Rules
+** Justification -- Typed Racket
+
+#+BEGIN_SRC racket
+((lambda ([x : Any]) (+ x 1)) #t)
+#+END_SRC
+
+#+BEGIN_SRC racket
+Type Checker: type mismatch
+  expected: Number
+  given: Any
+  in: x
+#+END_SRC
+
+** Implementation -- Typing Rules -- Multiple Arity Functions
 
 *** 
 
@@ -244,7 +257,7 @@ $$\frac{\Gamma \vdash M : \sigma_1 * \sigma_2 * \dots * \sigma_n \rightarrow \ta
 ||
 $$\frac{\Gamma \vdash M : \sigma \underset{n}{\rightarrow} \tau \qquad \Gamma \vdash N_{i}^{i \in \{1,2,\dots,n\} } : \sigma}{\Gamma \vdash (M \, N_1 \, N_2 \dots \, N_n) : \tau}$$
 ||
-- $\underset{n}{\rightarrow}$ is not entirely syntactic sugar
+- $\underset{n}{\rightarrow}$ is not syntactic sugar for $\sigma * \sigma * \dots * \sigma \rightarrow \tau$
 - Helps deal with Scheme's multiple arity functions
 
 ** Scheme's multiple arity functions
@@ -268,6 +281,155 @@ $$\frac{\Gamma \vdash M : \sigma \underset{n}{\rightarrow} \tau \qquad \Gamma \v
 (: > (->n number boolean))
 #+END_SRC
 
+** Implementation -- Predefined types
 
-** MIT/GNU Scheme Implementation
- 
+#+BEGIN_SRC scheme
+(define predefined-types
+  '((+ . (->n number number))
+    (- . (->n number number))
+    (* . (->n number number))
+    (/ . (->n number number))
+    (< . (->n number boolean))
+    (> . (->n number boolean))
+    (= . (->n number boolean))
+    ...
+    (null? . (-> (list any) boolean))
+    (cons . (-> (* any (list any)) (list any)))
+    (car . (-> (list any) any))
+    (cdr . (-> (list any) (list any)))
+    (map . (-> (* (-> any any) (list any)) (list any)))))
+#+END_SRC
+
+** Implementation -- Examples -- =fn=
+
+The function =t= takes an expression and an environment and returns the type of the expression
+
+#+BEGIN_SRC scheme
+(t '(fn (: x number) (+ x 1)) predefined-types)
+;; (-> number number)
+#+END_SRC
+
+#+BEGIN_SRC scheme
+(t '(fn (: x string) (+ x 1)) predefined-types)
+;; TypeError: inconsistent argument types for +
+#+END_SRC
+
+** Implementation -- Examples -- =application=
+
+#+BEGIN_SRC scheme
+(t '((fn (: x number) (+ x 2 3)) 3) '())
+;; number
+#+END_SRC
+
+#+BEGIN_SRC scheme
+(t '((fn (: x any) (+ x 1)) #t) predefined-types)
+;; TypeError: inconsistent argument types for +
+#+END_SRC
+
+#+BEGIN_SRC scheme
+(t '((fn (: x any) (f x)) y) predefined-types)
+;; any
+;; f : (-> any any)
+#+END_SRC
+
+** Implementation -- Examples -- =listof=
+
+#+BEGIN_SRC scheme
+(t '(listof (: number) 1 2 3) '())
+;; (list number)
+#+END_SRC
+
+#+BEGIN_SRC scheme
+(t '(listof (: any) 1 #t "H") '())
+;; (list any)
+#+END_SRC
+
+#+BEGIN_SRC scheme
+(t '(listof (: number) 3 #t 5) '())
+;; TypeError : Cast insertion error (: #t number)
+#+END_SRC
+
+#+BEGIN_SRC scheme
+(t '(listof (: number) (f 3) (f #t)) '())
+;; TypeError : expected number got boolean for f
+#+END_SRC
+
+#+BEGIN_SRC scheme
+(t '(listof (: number) (f 3) (f #t))
+   '((f . (-> any number))))
+;; (list number)
+#+END_SRC
+
+
+** Implementation -- Examples -- =defn=
+
+#+BEGIN_SRC scheme
+(defn (: range (-> (* number number) (list number))) (x y)
+  (if (> x y)
+      (listof (: number))
+      (cons x (range (+ x 1) y))))
+#+END_SRC
+
+** A gradually typed interpreter
+
+- As an example of a gradually typed program in our implementation, consider an interpreter for $\lambda^{\rightarrow,\mathbb{N}}$
+- Example Programs:
+  - =(int 3), (lam x (var x)), (app f x)=
+  - =(app (lam x (var x)) (int 3))=
+  - =(lam x (lam y (app (var x) (var y))))=
+
+- The next few slides go through the implementation of this interpreter in our gradually typed system
+
+** A gradually typed interpreter
+
+#+BEGIN_SRC scheme
+;; Types can be aliased
+(type-alias 'Envr '(list (pair any any)))
+(type-alias 'Expr '(list any))
+#+END_SRC
+
+#+BEGIN_SRC scheme
+;; typed functions
+(defn (: value (-> Expr any)) (exp)
+  (car (cdr exp)))
+(defn (: type (-> Expr any)) (exp)
+  (car exp))
+
+;; untyped 
+(define operator cadr)
+(define operand caddr)
+(define param cadr)
+(define body caddr)
+#+END_SRC
+
+** A gradually typed interpreter -- =eval=
+
+#+BEGIN_SRC
+;; Type Checked
+(defn (: eval (-> (* Expr Envr) any)) (exp env)
+  (if (eq? (type exp) 'var)
+      (cdr (assoc (value exp) env))
+      (if (eq? (type exp) 'int)
+          (value exp)
+          (if (eq? (type exp) 'app)
+             (apply
+               (eval (operator exp) env)
+               (eval (operand exp) env))
+             (if (eq? (type exp) 'lam)
+                  (listof (: any) 
+                    (param exp) (body exp) env)
+                  (listof (: any)))))))
+#+END_SRC
+
+
+** A gradually typed interpreter -- =apply=
+
+#+BEGIN_SRC 
+;; Not type checked
+(define (apply f arg)
+  (pmatch f
+    ((,x ,body ,env)
+     (eval body (cons (cons x arg) env)))
+    (else (error "expected closure in application"))))
+#+END_SRC
+
