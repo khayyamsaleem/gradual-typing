@@ -15,23 +15,23 @@ We first cast Scheme terms into an intermediate language in which all terms are 
 is then performed on this intermediate language. Consult the paper referenced and the documents in `./report`
 for more information. 
 
-We have a type consistency operator <img src="https://rawgit.com/khayyamsaleem/cs-810-gradual-typing/cleanup/svgs/39336a2ffd276833bc2af414ed460bfa.svg?invert_in_darkmode" align=middle width=12.7854342pt height=14.1552444pt/>. <img src="https://rawgit.com/khayyamsaleem/cs-810-gradual-typing/cleanup/svgs/39336a2ffd276833bc2af414ed460bfa.svg?invert_in_darkmode" align=middle width=12.7854342pt height=14.1552444pt/> is symmetric and reflexive, but not transitive.
-<img src="https://rawgit.com/khayyamsaleem/cs-810-gradual-typing/cleanup/svgs/cf37b5c0b85c89a22141a8acb12544cb.svg?invert_in_darkmode" align=middle width=7.76259pt height=22.8310566pt/> is <img src="https://rawgit.com/khayyamsaleem/cs-810-gradual-typing/cleanup/svgs/39336a2ffd276833bc2af414ed460bfa.svg?invert_in_darkmode" align=middle width=12.7854342pt height=14.1552444pt/> with every other type.
+We have a type consistency operator <img src="https://rawgit.com/khayyamsaleem/cs-810-gradual-typing/None/svgs/39336a2ffd276833bc2af414ed460bfa.svg?d40937ed9a&invert_in_darkmode" align=middle width=12.7854342pt height=14.1552444pt/>. <img src="https://rawgit.com/khayyamsaleem/cs-810-gradual-typing/None/svgs/39336a2ffd276833bc2af414ed460bfa.svg?24d7c770eb&invert_in_darkmode" align=middle width=12.7854342pt height=14.1552444pt/> is symmetric and reflexive, but not transitive.
+<img src="https://rawgit.com/khayyamsaleem/cs-810-gradual-typing/None/svgs/cf37b5c0b85c89a22141a8acb12544cb.svg?2802e78ac0&invert_in_darkmode" align=middle width=7.76259pt height=22.8310566pt/> is <img src="https://rawgit.com/khayyamsaleem/cs-810-gradual-typing/None/svgs/39336a2ffd276833bc2af414ed460bfa.svg?9d9723a491&invert_in_darkmode" align=middle width=12.7854342pt height=14.1552444pt/> with every other type.
 
 The typing rules we implement are essentially,
 
-<p align="center"><img src="https://rawgit.com/khayyamsaleem/cs-810-gradual-typing/cleanup/svgs/2efc983447c66fb611c01b1c1e0a909e.svg?invert_in_darkmode" align=middle width=65.59352085pt height=34.7253258pt/></p>
+<p align="center"><img src="https://rawgit.com/khayyamsaleem/cs-810-gradual-typing/None/svgs/2efc983447c66fb611c01b1c1e0a909e.svg?767456e5ee&invert_in_darkmode" align=middle width=65.59352085pt height=34.7253258pt/></p>
 
-<p align="center"><img src="https://rawgit.com/khayyamsaleem/cs-810-gradual-typing/cleanup/svgs/c6cd8096a960aed249b0b52b2a552bd1.svg?invert_in_darkmode" align=middle width=59.310966pt height=33.62942055pt/></p>
+<p align="center"><img src="https://rawgit.com/khayyamsaleem/cs-810-gradual-typing/None/svgs/c6cd8096a960aed249b0b52b2a552bd1.svg?77e08b7265&invert_in_darkmode" align=middle width=59.310966pt height=33.62942055pt/></p>
 
-<p align="center"><img src="https://rawgit.com/khayyamsaleem/cs-810-gradual-typing/cleanup/svgs/7cb6f329a9f70816714440b00b248293.svg?invert_in_darkmode" align=middle width=141.72313485pt height=34.7253258pt/></p>
+<p align="center"><img src="https://rawgit.com/khayyamsaleem/cs-810-gradual-typing/None/svgs/7cb6f329a9f70816714440b00b248293.svg?28f2245496&invert_in_darkmode" align=middle width=141.72313485pt height=34.7253258pt/></p>
 
-<p align="center"><img src="https://rawgit.com/khayyamsaleem/cs-810-gradual-typing/cleanup/svgs/071219fcffda373da462a0d031274568.svg?invert_in_darkmode" align=middle width=153.29281275pt height=36.2778141pt/></p>
+<p align="center"><img src="https://rawgit.com/khayyamsaleem/cs-810-gradual-typing/None/svgs/071219fcffda373da462a0d031274568.svg?c39dac95bc&invert_in_darkmode" align=middle width=153.29281275pt height=36.2778141pt/></p>
 
-<p align="center"><img src="https://rawgit.com/khayyamsaleem/cs-810-gradual-typing/cleanup/svgs/802367a8916bb01390be22fa3824a3d0.svg?invert_in_darkmode" align=middle width=376.431627pt height=36.2778141pt/></p>
+<p align="center"><img src="https://rawgit.com/khayyamsaleem/cs-810-gradual-typing/None/svgs/802367a8916bb01390be22fa3824a3d0.svg?1e8939f7df&invert_in_darkmode" align=middle width=376.431627pt height=36.2778141pt/></p>
 
-The condition <img src="https://rawgit.com/khayyamsaleem/cs-810-gradual-typing/cleanup/svgs/429e4ec21ca5eb5ac67224ede0d5d1b6.svg?invert_in_darkmode" align=middle width=100.7227089pt height=22.8310566pt/> ensures that we cannot apply a function whose
-domain is not <img src="https://rawgit.com/khayyamsaleem/cs-810-gradual-typing/cleanup/svgs/cf37b5c0b85c89a22141a8acb12544cb.svg?invert_in_darkmode" align=middle width=7.76259pt height=22.8310566pt/> to a value of type <img src="https://rawgit.com/khayyamsaleem/cs-810-gradual-typing/cleanup/svgs/cf37b5c0b85c89a22141a8acb12544cb.svg?invert_in_darkmode" align=middle width=7.76259pt height=22.8310566pt/>. This is inspired by Typed Racket:
+The condition <img src="https://rawgit.com/khayyamsaleem/cs-810-gradual-typing/None/svgs/429e4ec21ca5eb5ac67224ede0d5d1b6.svg?6e015da769&invert_in_darkmode" align=middle width=100.7227089pt height=22.8310566pt/> ensures that we cannot apply a function whose
+domain is not <img src="https://rawgit.com/khayyamsaleem/cs-810-gradual-typing/None/svgs/cf37b5c0b85c89a22141a8acb12544cb.svg?7ad217684e&invert_in_darkmode" align=middle width=7.76259pt height=22.8310566pt/> to a value of type <img src="https://rawgit.com/khayyamsaleem/cs-810-gradual-typing/None/svgs/cf37b5c0b85c89a22141a8acb12544cb.svg?88cb2589aa&invert_in_darkmode" align=middle width=7.76259pt height=22.8310566pt/>. This is inspired by Typed Racket:
 
 ```racket
 ((lambda ([x : Any]) (+ x 1)) #t)
@@ -68,15 +68,15 @@ We extend Scheme with new terms - `fn`, `listof`, `defvar`, `pair`, and `defn`.
 
 Once the type checking is done, we can get rid of the type annotations.
 
-<p align="center"><img src="https://rawgit.com/khayyamsaleem/cs-810-gradual-typing/cleanup/svgs/43747241ae48c9922ae99f4b43f47b2f.svg?invert_in_darkmode" align=middle width=275.8424658pt height=17.0840637pt/></p>
+<p align="center"><img src="https://rawgit.com/khayyamsaleem/cs-810-gradual-typing/None/svgs/43747241ae48c9922ae99f4b43f47b2f.svg?ec5f28f9f&invert_in_darkmode" align=middle width=275.8424658pt height=17.0840637pt/></p>
 
-<p align="center"><img src="https://rawgit.com/khayyamsaleem/cs-810-gradual-typing/cleanup/svgs/e4d527cb838383fdcdf2a70d22087517.svg?invert_in_darkmode" align=middle width=344.8829538pt height=17.0840637pt/></p>
+<p align="center"><img src="https://rawgit.com/khayyamsaleem/cs-810-gradual-typing/None/svgs/e4d527cb838383fdcdf2a70d22087517.svg?5e9b6b0817&invert_in_darkmode" align=middle width=344.8829538pt height=17.0840637pt/></p>
 
-<p align="center"><img src="https://rawgit.com/khayyamsaleem/cs-810-gradual-typing/cleanup/svgs/75edb5dc7bf77df80db970367cdfa039.svg?invert_in_darkmode" align=middle width=293.10257625pt height=17.0840637pt/></p>
+<p align="center"><img src="https://rawgit.com/khayyamsaleem/cs-810-gradual-typing/None/svgs/75edb5dc7bf77df80db970367cdfa039.svg?4b4b0e51cd&invert_in_darkmode" align=middle width=293.10257625pt height=17.0840637pt/></p>
 
-<p align="center"><img src="https://rawgit.com/khayyamsaleem/cs-810-gradual-typing/cleanup/svgs/00d34c8d8d041e651d3f1dbfce32f6ed.svg?invert_in_darkmode" align=middle width=198.17188545pt height=19.3672215pt/></p>
+<p align="center"><img src="https://rawgit.com/khayyamsaleem/cs-810-gradual-typing/None/svgs/00d34c8d8d041e651d3f1dbfce32f6ed.svg?8c11ed1c3b&invert_in_darkmode" align=middle width=198.17188545pt height=19.3672215pt/></p>
 
-<p align="center"><img src="https://rawgit.com/khayyamsaleem/cs-810-gradual-typing/cleanup/svgs/f799db6ab73c41d9f36eb2f2ac8245bf.svg?invert_in_darkmode" align=middle width=465.70385565pt height=19.3672215pt/></p>
+<p align="center"><img src="https://rawgit.com/khayyamsaleem/cs-810-gradual-typing/None/svgs/f799db6ab73c41d9f36eb2f2ac8245bf.svg?93c4e3333e&invert_in_darkmode" align=middle width=465.70385565pt height=19.3672215pt/></p>
 
 ## types
 
