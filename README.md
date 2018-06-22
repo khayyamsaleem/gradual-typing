@@ -1,16 +1,133 @@
 # gradual-typing
 
-A small gradual type system for Scheme.
-
-<p align="center"><img src="https://rawgit.com/khayyamsaleem/cs-810-gradual-typing/cleanup/svgs/32737e0a8d5a4cf32ba3ab1b74902ab7.svg?invert_in_darkmode" align=middle width=127.9847844pt height=39.452455349999994pt/></p>
-
 ## about
 
-TODO
+Gradual Typing allows some parts of a program to be dynamically typed and other parts to
+be statically typed. Type annotations provided by the programmer determine which portions
+of the program are type checked before execution.
 
-## typing rules
+This is an implementation of a subset of the system described in the paper [*Gradual Typing for Functional
+Languages* by Siek and Taha (2006)](https://www.cs.indiana.edu/~lkuper/talks/gradual/gradual.pdf).
 
-TODO
+## gradual typing - rules
+
+We first cast Scheme terms into an intermediate language in which all terms are fully annotated. Type checking
+is then performed on this intermediate language. Consult the paper referenced and the documents in `./report`
+for more information. 
+
+We have a type consistency operator <img src="svgs/39336a2ffd276833bc2af414ed460bfa.svg?invert_in_darkmode" align=middle width=12.7854342pt height=14.1552444pt/>. <img src="svgs/39336a2ffd276833bc2af414ed460bfa.svg?invert_in_darkmode" align=middle width=12.7854342pt height=14.1552444pt/> is symmetric and reflexive, but not transitive. <img src="svgs/cf37b5c0b85c89a22141a8acb12544cb.svg?invert_in_darkmode" align=middle width=7.76259pt height=22.8310566pt/> is <img src="svgs/39336a2ffd276833bc2af414ed460bfa.svg?invert_in_darkmode" align=middle width=12.7854342pt height=14.1552444pt/> with every other type.
+
+The typing rules we implement are essentially,
+
+<p align="center"><img src="svgs/bbfab27dbe4321afe1fd74c03e15eed1.svg?invert_in_darkmode" align=middle width=65.2453659pt height=34.7253258pt/></p>
+
+<p align="center"><img src="svgs/c6cd8096a960aed249b0b52b2a552bd1.svg?invert_in_darkmode" align=middle width=59.310966pt height=33.62942055pt/></p>
+
+<p align="center"><img src="svgs/7cb6f329a9f70816714440b00b248293.svg?invert_in_darkmode" align=middle width=141.72313485pt height=34.7253258pt/></p>
+
+<p align="center"><img src="svgs/00771a01af1961efbc9b336a0a660f50.svg?invert_in_darkmode" align=middle width=166.99153515pt height=36.2778141pt/></p>
+
+<p align="center"><img src="svgs/0285d6382ec4c1f7dfb663f11968f362.svg?invert_in_darkmode" align=middle width=370.95230865pt height=36.2778141pt/></p>
+
+The condition <img src="svgs/7593ddd49af674b95a9836e6bf72c9b2.svg?invert_in_darkmode" align=middle width=95.24339055pt height=22.8310566pt/> ensures that we cannot apply a function whose domain
+is not <img src="svgs/cf37b5c0b85c89a22141a8acb12544cb.svg?invert_in_darkmode" align=middle width=7.76259pt height=22.8310566pt/> to a value of type <img src="svgs/cf37b5c0b85c89a22141a8acb12544cb.svg?invert_in_darkmode" align=middle width=7.76259pt height=22.8310566pt/>. This is inspired by Typed Racket:
+
+```racket
+((lambda ([x : Any]) (+ x 1)) #t)
+;; Type Checker: type mismatch
+;;   expected: Number
+;;   given: Any
+;;   in: x
+```
+
+## macros
+
+We extend Scheme with new terms - `fn`, `listof`, `defvar`, `pair`, and `defn`.
+
+```scheme
+;; fn is typed lambda -- annotate parameter type and optionally, the return type
+(fn (: <param> <type>) <body>)
+(fn (: <param> <type>) (: <return-type>) <body>)
+
+;; defvar is used to define new variables with types
+(defvar (: <var> <type>) <value>)
+
+;; listof is used to create typed lists
+(listof (: <type>) <value>*)
+
+;; pair is a macro used internally to deal with pair types. Might be removed later
+(pair <fst> <snd>)
+
+;; defn is used to define typed functions
+(defn (: <function-name> <function-type>) (<params>) <body>)
+```
+
+### semantics
+
+Once the type checking is done, we can get rid of the type annotations.
+
+<p align="center"><img src="svgs/43747241ae48c9922ae99f4b43f47b2f.svg?invert_in_darkmode" align=middle width=275.8424658pt height=17.0840637pt/></p>
+
+<p align="center"><img src="svgs/e4d527cb838383fdcdf2a70d22087517.svg?invert_in_darkmode" align=middle width=344.8829538pt height=17.0840637pt/></p>
+
+<p align="center"><img src="svgs/75edb5dc7bf77df80db970367cdfa039.svg?invert_in_darkmode" align=middle width=293.10257625pt height=17.0840637pt/></p>
+
+<p align="center"><img src="svgs/00d34c8d8d041e651d3f1dbfce32f6ed.svg?invert_in_darkmode" align=middle width=198.17188545pt height=19.3672215pt/></p>
+
+<p align="center"><img src="svgs/f799db6ab73c41d9f36eb2f2ac8245bf.svg?invert_in_darkmode" align=middle width=465.70385565pt height=19.3672215pt/></p>
+
+## types
+
+Types are represented using symbols. Here are the types we can work with in this system. The macros quote
+the type parameter - we don't have to quote the types in the source.
+
+```scheme
+;;; dynamic types
+any
+
+;;; ground types
+number
+boolean
+string
+character
+
+;;; pair types
+(* <type> <type> ...)
+;; e.g.
+(* number string)
+(* (-> boolean any) any (-> (-> string number) string))
+
+;;; list types
+(list <type>)
+;; e.g.
+(list number)
+(list (-> number any))
+
+;;; function types
+(-> <domain> <co-domain>)
+;; e.g.
+(-> number number)
+(-> number (-> string number))
+
+;; multiple arity functions
+(->k <dom> <cod>)
+;; expands to (-> (* <dom> <dom> ... <dom>) <cod>)
+;;                   ^-----  k times -----^
+;; e.g.
+(->2 number boolean)            ;; (-> (* number number) boolean)
+(->3 string (-> string number)) ;; (-> (* string string string)
+                                ;;     (-> string number))
+;; special case
+(->n <dom> <cod>) ;; can accept any number of <dom> types
+                  ;; used to deal with scheme functions +, -, * and so on
+
+
+;; types given to Scheme functions
+(+ (->n number number))
+(eq? (->2 any boolean))
+(map (-> (* (-> any any) (list any)) (list any))) ;; more like map2
+(assoc (-> (* any (list (pair any any))) (list (pair any any))))
+```
 
 ## examples
 
