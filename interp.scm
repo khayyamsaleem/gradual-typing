@@ -1,5 +1,6 @@
 (load "pmatch.scm")
 (load "types.scm")
+(load "synext.scm")
 
 (type-alias 'Envr '(list (pair any any)))
 (type-alias 'Expr '(list any))
@@ -17,25 +18,24 @@
 (define param cadr)
 (define body caddr)
 
-(defn (: eval (-> (* Expr Envr) any)) (exp env)
+(defn (: teval (-> (* Expr Envr) any)) (exp env)
   (if (eq? (type exp) 'var)
       (cdr (assoc (value exp) env))
       (if (eq? (type exp) 'int)
           (value exp)
           (if (eq? (type exp) 'app)
-              (apply
-                (eval (operator exp) env)
-                (eval (operand exp) env))
+              (tapply
+                (teval (operator exp) env)
+                (teval (operand exp) env))
               (if (eq? (type exp) 'lam)
                   (listof (: any)
                     (param exp) (body exp) env)
                   (listof (: any)))))))
 
 ;; untyped apply
-(define (apply f arg)
+(define (tapply f arg)
   (pmatch f
     ((,x ,body ,env)
-     (eval body (cons (cons x arg) env)))
+     (teval body (cons (cons x arg) env)))
     (else (error "attempting to apply non-function"))))
-
 
