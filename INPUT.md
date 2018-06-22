@@ -37,10 +37,10 @@ $$
 $$
 
 $$
-\frac{\Gamma \vdash e_{1} : \sigma \rightarrow \tau \quad \Gamma \vdash e_{2} : \sigma_{2} \quad \sigma \sim \sigma_{2} \quad \sigma \neq \, ? \wedge \sigma_{2} \neq \, ?}{\Gamma \vdash e_{1} e_{2} : \tau}
+\frac{\Gamma \vdash e_{1} : \sigma \rightarrow \tau \quad \Gamma \vdash e_{2} : \sigma_{2} \quad \sigma \sim \sigma_{2} \quad \sigma = \, ? \leftrightarrow \sigma_{2} = \, ?}{\Gamma \vdash e_{1} e_{2} : \tau}
 $$
 
-The condition $\sigma \neq \, ? \wedge \sigma_{2} \neq \, ?$ ensures that we cannot apply a function whose
+The condition $\sigma = \, ? \leftrightarrow \sigma_{2} = \, ?$ ensures that we cannot apply a function whose
 domain is not $?$ to a value of type $?$. This is inspired by Typed Racket:
 
 ```racket
